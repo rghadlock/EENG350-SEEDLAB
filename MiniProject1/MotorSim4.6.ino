@@ -84,6 +84,7 @@ void setup() {
   pinMode(MOTOR_SPEED, OUTPUT);
 
   // enables motor
+  digitalWrite(MOTOR_DIRECTION, HIGH);
   digitalWrite(MOTOR_ENABLE, HIGH);
   
   // set Up ISR
