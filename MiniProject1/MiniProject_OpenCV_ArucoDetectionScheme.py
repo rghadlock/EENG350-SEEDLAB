@@ -98,13 +98,17 @@ def main():
                print("Wheel Position (degrees): ", wheelPos)#print degrees
                #show wheel position on lcd
                lcd.clear()
-               msg = "Setpoint: %.3f" % (wheelPos * 3.14159 /180)#show radians on lcd
+               desireRads = wheelPos * 3.14159 /180
+               msg = "Setpoint: %.3f" % (desireRads)
                lcd.message = msg
                ardPos = readNumer()
                curPos = int.from_bytes(ardPos, byteorder = 'big')
                RecievedPOSfromArduino = ((float)curPos * 6.283) / 3200;
                msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
                lcd.message = msg
+               desireRads = int(desireRads * 1000)
+               sendRads = desireRads.to_bytes(2, byteorder = 'big')
+               writeNumber(sendRads)
             else:
                print("No Markers Found")
             output.truncate(0) #clear image for new capture
