@@ -16,11 +16,13 @@
 
 // libraries
 #include <Encoder.h>
+#include <Wire.h>
 
 // constants
 #define SAMPLE_TIME     10    // sampling time
 #define STEP_VOLTAGE    1     // equivalent input voltage into the motor
 #define MAX_VOLTAGE     7.2   // maximum voltage of the input into the motor
+#define SLAVE_ADDRESS 0x04
 
 // pins
 #define CHANNEL_A       2     // encoder input pin for channel A  
@@ -37,6 +39,7 @@ double newRadians = 0;        // holds new radian reading
 double oldRadians = 0;        // holds old raidan reading
 double angVelocity = 0;       // holds calculated angular velocity
 int voltage = 0;              // holds equivalent voltage put into the motor
+byte outVal[2] = {0};
 
 // sets encoder function
 Encoder motorEnc(CHANNEL_A, CHANNEL_B);
@@ -75,6 +78,11 @@ void setup() {
   // serial communication initialization
   Serial.begin(115200);
   
+  //initialize i2c as slave
+  Wire.begin(SLAVE_ADDRESS);
+  Wire.onReceive(receiveData);
+  Wire.onRequest(sendData);
+  
   // assign Encoder and button pins as Inputs and motor Pins as output
   pinMode(CHANNEL_A, INPUT);
   pinMode(CHANNEL_B, INPUT);
@@ -101,6 +109,7 @@ void loop() {
     
     // takes sample and calculates angular velocity
     newRadians = ((double)motorEnc.read() * 6.283) / 3200;
+    outPos = motorEnc.read();
     angVelocity = (1000 * (newRadians - oldRadians)) / SAMPLE_TIME;
     
     //displays sample
@@ -121,3 +130,15 @@ void loop() {
     while(millis() < (currentTime + SAMPLE_TIME));
     
 } // end of loop
+
+void receiveData(int byteCount) {
+
+}
+void sendData(){
+  //shift bits to get specific bytes from sensorVal
+  outVal[0] = outPos >> 8;
+  outVal[1] = outPos & 0x00FF;
+  Serial.println();
+  Wire.write(outVal, 2);
+  
+}
