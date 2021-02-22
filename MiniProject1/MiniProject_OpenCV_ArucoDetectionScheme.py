@@ -23,12 +23,16 @@ lcd.color = [0,0,100]
 time.sleep(1)
 bus = smbus.SMBus(1)
 address = 4
-size = 0
+size = 2
 
-def
+def writeNumber(value):
+    bus.write_i2c_block_data(address, 0, value)
+    return -1
 
 
-def
+def def readNumber():
+    number = bus.read_i2c_block_data(address, 0, size)
+    return number
 
 
 def createMarkers(): #run this program then print the markers that are saved in this program's directory
