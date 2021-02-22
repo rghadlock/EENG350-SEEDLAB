@@ -115,6 +115,3 @@ def main():
             output.truncate(0) #clear image for new capture
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
-   
-#TODO
-   #send setpoint to Arduino
