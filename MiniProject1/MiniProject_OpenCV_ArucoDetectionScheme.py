@@ -30,7 +30,7 @@ def writeNumber(value):
     return -1
 
 
-def def readNumber():
+def readNumber():
     number = bus.read_i2c_block_data(address, 0, size)
     return number
 
