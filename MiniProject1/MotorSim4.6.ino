@@ -39,7 +39,8 @@ double newRadians = 0;        // holds new radian reading
 double oldRadians = 0;        // holds old raidan reading
 double angVelocity = 0;       // holds calculated angular velocity
 int voltage = 0;              // holds equivalent voltage put into the motor
-byte outVal[2] = {0};
+byte outVal[2] = {0};         // holds bytes to send to pi
+int outPos = 0;               // hold rotary encoder val
 
 // sets encoder function
 Encoder motorEnc(CHANNEL_A, CHANNEL_B);
