@@ -100,7 +100,11 @@ def main():
                lcd.clear()
                msg = "Setpoint: %.3f" % (wheelPos * 3.14159 /180)#show radians on lcd
                lcd.message = msg
-               #msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
+               ardPos = readNumer()
+               curPos = int.from_bytes(ardPos, byteorder = 'big')
+               RecievedPOSfromArduino = ((float)curPos * 6.283) / 3200;
+               msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
+               lcd.message = msg
             else:
                print("No Markers Found")
             output.truncate(0) #clear image for new capture
