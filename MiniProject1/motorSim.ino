@@ -1,11 +1,10 @@
-#include <Encoder.h>
-
 /*
   MotorSim4.6
-  by Nolan Egging (February 2021)
+  by Jacob Bommersbach Nolan Egging (February 2021)
   Colorado School of Mines 
   EENG350 Seed Lab - Mini Project
-  Purpose:
+
+  Purpose: 
   
   Note: 
   There will be a time error after 50 days. This problem is not addressed because the
@@ -15,86 +14,106 @@
   
 */
 
-// constants and pins
-#define SAMPLE_TIME   20 // 10 ms (100 Hz) sampling time
+// libraries
+#include <Encoder.h>
+
+// constants
+#define SAMPLE_TIME     10    // sampling time
+#define STEP_VOLTAGE    5     // equivalent input voltage into the motor
+#define MAX_VOLTAGE     7.2   // maximum voltage of the input into the motor
+
+// pins
+#define CHANNEL_A       2     // encoder input pin for channel A  
+#define RESET_BUTTON    3     // input pin for active high reset button
+#define MOTOR_ENABLE    4     // output pin that needs to be high for the motor to be enabled
+#define CHANNEL_B       6     // encoder input pin for channel B
+#define MOTOR_DIRECTION 7     // output pin for motor direction
+#define MOTOR_SPEED     9     // output pin for PWM that controls motor speed
 
 // global variables
-unsigned long currentTime = 0;
-int rightA = 2;
-int rightB = 6;
-int resetButton = 3;
-int motorEnable = 4;
-int motorDirection = 7;
-int motorSpeed = 9;
-int counterRight = 0;
-double radRightNew = 0;
-double radRightOld = 0;
-double velRight = 0;
-double angVelRight = 0;
-int motorFlag =1;
-int voltage = 0;
-unsigned long lastTime = 0;
+unsigned long currentTime = 0;// holds time in ms of the start of the loop routine
+int motorOnFlag = 0;          // flag that represents whether or not the motor is on or off
+double newRadians = 0;        // holds new radian reading
+double oldRadians = 0;        // holds old raidan reading
+double angVelocity = 0;       // holds calculated angular velocity
+int voltage = 0;              // holds equivalent voltage put into the motor
 
-Encoder myEnc(rightA, rightB);
-// encoder ISR
+// sets encoder function
+Encoder motorEnc(CHANNEL_A, CHANNEL_B);
 
 
-
+// ISR that detects when the reset button is pressed
 void resetISR(void){
-  myEnc.write(0);
-  radRightNew = 0;
-  radRightOld = 0;
-  angVelRight = 0;
-  motorFlag = 0;
-}
+
+   // turns on or off motor depending on current state
+  if (motorOnFlag == 0) {
+
+    // turns on motor
+    analogWrite(MOTOR_SPEED, ((STEP_VOLTAGE * 255) / MAX_VOLTAGE));
+    motorOnFlag = 1;
+    voltage = STEP_VOLTAGE;
+    
+  } else {
+
+    // turns off motor
+    motorEnc.write(0);
+    newRadians = 0;
+    oldRadians = 0;
+    angVelocity = 0;
+    analogWrite(MOTOR_SPEED, 0);
+    motorOnFlag  = 0;
+    voltage = 0;
+    
+  } // end of (motorOnFlag == 0) if else branch
+  
+} // end of ISR
+
+
 // setup routine
 void setup() {
 
   // serial communication initialization
-  Serial.begin(9600);
+  Serial.begin(115200);
   
-  //Assign Encoder and button pins as Inputs and motor Pins as output
-  pinMode(rightA, INPUT);
-  pinMode(rightB, INPUT);
-  pinMode(resetButton, INPUT);
-  pinMode(motorEnable, OUTPUT);
-  digitalWrite(motorEnable, HIGH);
-  pinMode(motorDirection, OUTPUT);
-  pinMode(motorSpeed, OUTPUT);
-  
-  
+  // assign Encoder and button pins as Inputs and motor Pins as output
+  pinMode(CHANNEL_A, INPUT);
+  pinMode(CHANNEL_B, INPUT);
+  pinMode(RESET_BUTTON, INPUT);
+  pinMode(MOTOR_ENABLE, OUTPUT);
+  pinMode(MOTOR_DIRECTION, OUTPUT);
+  pinMode(MOTOR_SPEED, OUTPUT);
 
-  //Set Up ISR
+  // enables motor
+  digitalWrite(MOTOR_DIRECTION, HIGH);
+  digitalWrite(MOTOR_ENABLE, HIGH);
   
-  attachInterrupt(digitalPinToInterrupt(resetButton), resetISR, RISING);
+  // set Up ISR
+  attachInterrupt(digitalPinToInterrupt(RESET_BUTTON), resetISR, RISING);
 
 } // end of setup
+
 
 // loop routine
 void loop() {
   
     // measures time for delay
     currentTime = millis();
-    if(!motorFlag){
-      analogWrite(motorSpeed, 34);
-      voltage = 5;
-      motorFlag = 1;
-    }
-    // takes sample
-    radRightNew = ((double)myEnc.read()* 6.283)/3200;
-    //Serial.println(myEnc.read());
-    angVelRight = 1000*(radRightNew - radRightOld)/(SAMPLE_TIME);
+    
+    // takes sample and calculates angular velocity
+    newRadians = ((double)motorEnc.read() * 6.283) / 3200;
+    angVelocity = (1000 * (newRadians - oldRadians)) / SAMPLE_TIME;
     
     //displays sample
-    Serial.print(currentTime);
+    Serial.print((double)currentTime / 1000); // sample time in seconds
     Serial.print("\t");
-    // TODO: motor voltage command printout
     Serial.print(voltage);
     Serial.print("\t");
-    // TODO: angular velocity
-    Serial.print(angVelRight);
+    Serial.print(angVelocity);
     Serial.print("\n\r");
-    radRightOld = radRightNew;
+
+    // resets old radians variable
+    oldRadians = newRadians;
+    
     // ensures function isn't taking too long
     if (millis() > (currentTime + SAMPLE_TIME)) Serial.println("ERROR: Under Sampling!");
     
