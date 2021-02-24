@@ -23,7 +23,10 @@ lcd.color = [0,0,100]
 time.sleep(1)
 bus = smbus.SMBus(1)
 address = 4
+
 size = 2
+
+
 
 def writeNumber(value):
     bus.write_i2c_block_data(address, 0, value)
@@ -104,11 +107,13 @@ def main():
                writeNumber(sendRads)
                msg = "Setpoint: %.3f" % (desireRads)
                lcd.message = msg
+
                ardPos = readNumer()
                curPos = int.from_bytes(ardPos, byteorder = 'big')
                RecievedPOSfromArduino = ((float)curPos * 6.283) / 3200;
                msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
                lcd.message = msg
+
             else:
                print("No Markers Found")
             output.truncate(0) #clear image for new capture
