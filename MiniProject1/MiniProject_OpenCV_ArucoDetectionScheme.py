@@ -99,6 +99,9 @@ def main():
                #show wheel position on lcd
                lcd.clear()
                desireRads = wheelPos * 3.14159 /180
+               desireRads = int(desireRads * 1000)
+               sendRads = desireRads.to_bytes(2, byteorder = 'big')
+               writeNumber(sendRads)
                msg = "Setpoint: %.3f" % (desireRads)
                lcd.message = msg
                ardPos = readNumer()
@@ -106,9 +109,6 @@ def main():
                RecievedPOSfromArduino = ((float)curPos * 6.283) / 3200;
                msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
                lcd.message = msg
-               desireRads = int(desireRads * 1000)
-               sendRads = desireRads.to_bytes(2, byteorder = 'big')
-               writeNumber(sendRads)
             else:
                print("No Markers Found")
             output.truncate(0) #clear image for new capture
