@@ -38,6 +38,7 @@ double oldRadians = 0;        // holds old raidan reading
 double angVelocity = 0;       // holds calculated angular velocity
 int voltage = 0;              // holds equivalent voltage put into the motor
 byte outVal[2] = {0};         // holds bytes to send to pi
+byte dataRec[2] = {0};
 int outPos = 0;               // hold rotary encoder val
 
 double posDes = 0;
@@ -106,7 +107,9 @@ void loop() {
     // takes position sample
     posNow = ((double)motorEnc.read() * 6.283) / 3200;
     outPos = motorEnc.read();                             //?????
-
+  //after desired position is recieved from pi, change into radians. 
+    int posRec = (data[0] << 8) | (data[1]);
+    posDes = posRec / 1000;
     // controller implementation
     posErr = posDes - posNow;
     posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum;
@@ -147,14 +150,18 @@ void loop() {
     
 } // end of loop
 
-//void receiveData(int byteCount) {
-//
-//}
-//void sendData(){
-//  //shift bits to get specific bytes from outPos
-//  outVal[0] = outPos >> 8;
-//  outVal[1] = outPos & 0x00FF;
-//  Serial.println();
-//  Wire.write(outVal, 2);
-//  
-//}
+void receiveData(int byteCount) {
+  int k = 0;
+  while (Wire.available()) {
+    data[k] = Wire.read();
+    i++;
+  }
+}
+void sendData(){
+ //shift bits to get specific bytes from outPos
+  outVal[0] = outPos >> 8;
+  outVal[1] = outPos & 0x00FF;
+  Serial.println();
+  Wire.write(outVal, 2);
+  
+}
