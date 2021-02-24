@@ -121,6 +121,4 @@ def main():
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
    
-#TODO
-   #send setpoint to Arduino
-   #Get current position from Arduino
+
