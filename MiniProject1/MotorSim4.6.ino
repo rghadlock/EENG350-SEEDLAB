@@ -1,9 +1,8 @@
 /*
-  MotorSim4.6
+  Motor Controller
   by Jacob Bommersbach Nolan Egging (February 2021)
   Colorado School of Mines 
   EENG350 Seed Lab - Mini Project
-
   Purpose: 
   
   Note: 
@@ -16,11 +15,12 @@
 
 // libraries
 #include <Encoder.h>
+#include <Wire.h>
 
 // constants
 #define SAMPLE_TIME     10    // sampling time
-#define STEP_VOLTAGE    1     // equivalent input voltage into the motor
 #define MAX_VOLTAGE     7.2   // maximum voltage of the input into the motor
+#define SLAVE_ADDRESS   0x04
 
 // pins
 #define CHANNEL_A       2     // encoder input pin for channel A  
@@ -33,10 +33,22 @@
 // global variables
 unsigned long currentTime = 0;// holds time in ms of the start of the loop routine
 int motorOnFlag = 0;          // flag that represents whether or not the motor is on or off
-double newRadians = 0;        // holds new radian reading
+double posNow = 0;        // holds new radian reading
 double oldRadians = 0;        // holds old raidan reading
 double angVelocity = 0;       // holds calculated angular velocity
 int voltage = 0;              // holds equivalent voltage put into the motor
+byte outVal[2] = {0};         // holds bytes to send to pi
+byte dataRec[2] = {0};
+int outPos = 0;               // hold rotary encoder val
+
+double posDes = 0;
+double posErr = 0;
+double inputVoltage = 0;
+double posErrSum = 0;
+//double kp = 2.10;
+//double ki = 0.137;
+double kp = 2.9229;
+double ki = 0.2291;
 
 // sets encoder function
 Encoder motorEnc(CHANNEL_A, CHANNEL_B);
@@ -45,25 +57,13 @@ Encoder motorEnc(CHANNEL_A, CHANNEL_B);
 // ISR that detects when the reset button is pressed
 void resetISR(void){
 
-   // turns on or off motor depending on current state
+   // changes desired button
   if (motorOnFlag == 0) {
-
-    // turns on motor
-    analogWrite(MOTOR_SPEED, ((STEP_VOLTAGE * 255) / MAX_VOLTAGE));
     motorOnFlag = 1;
-    voltage = STEP_VOLTAGE;
-    
+    posDes = 6.28;
   } else {
-
-    // turns off motor
-    motorEnc.write(0);
-    newRadians = 0;
-    oldRadians = 0;
-    angVelocity = 0;
-    analogWrite(MOTOR_SPEED, 0);
     motorOnFlag  = 0;
-    voltage = 0;
-    
+    posDes = 0;
   } // end of (motorOnFlag == 0) if else branch
   
 } // end of ISR
@@ -74,6 +74,11 @@ void setup() {
 
   // serial communication initialization
   Serial.begin(115200);
+  
+  //initialize i2c as slave
+//  Wire.begin(SLAVE_ADDRESS);
+//  Wire.onReceive(receiveData);
+//  Wire.onRequest(sendData);
   
   // assign Encoder and button pins as Inputs and motor Pins as output
   pinMode(CHANNEL_A, INPUT);
@@ -99,21 +104,44 @@ void loop() {
     // measures time for delay
     currentTime = millis();
     
-    // takes sample and calculates angular velocity
-    newRadians = ((double)motorEnc.read() * 6.283) / 3200;
-    angVelocity = (1000 * (newRadians - oldRadians)) / SAMPLE_TIME;
+    // takes position sample
+    posNow = ((double)motorEnc.read() * 6.283) / 3200;
+    outPos = motorEnc.read();                             //?????
+  //after desired position is recieved from pi, change into radians. 
+    int posRec = (data[0] << 8) | (data[1]);
+    posDes = posRec / 1000;
+    // controller implementation
+    posErr = posDes - posNow;
+    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum;
+    inputVoltage = (posErr * kp) + (posErrSum * ki);
+    if( inputVoltage > MAX_VOLTAGE){
+      inputVoltage = MAX_VOLTAGE;
+    }
+    else if(inputVoltage < (-1* MAX_VOLTAGE)){
+      inputVoltage = (-1 * MAX_VOLTAGE);
+    }
+    if(inputVoltage < 0){
+      digitalWrite(MOTOR_DIRECTION, LOW);
+    }
+    else{
+      digitalWrite(MOTOR_DIRECTION, HIGH);
+    }
+    analogWrite(MOTOR_SPEED, (abs(inputVoltage * 255) / MAX_VOLTAGE));
     
-    //displays sample
+    //displays data
     Serial.print((double)currentTime / 1000); // sample time in seconds
     Serial.print("\t");
-    Serial.print(voltage);
+    Serial.print(inputVoltage);
     Serial.print("\t");
-    Serial.print(angVelocity);
+    Serial.print(posNow);
+    Serial.print("\t");
+    Serial.print(posErr);
+    Serial.print("\t");
+    Serial.print(posErrSum);
+    Serial.print("\t");
+    Serial.print(MAX_VOLTAGE);
     Serial.print("\n\r");
-
-    // resets old radians variable
-    oldRadians = newRadians;
-    
+   
     // ensures function isn't taking too long
     if (millis() > (currentTime + SAMPLE_TIME)) Serial.println("ERROR: Under Sampling!");
     
@@ -121,3 +149,19 @@ void loop() {
     while(millis() < (currentTime + SAMPLE_TIME));
     
 } // end of loop
+
+void receiveData(int byteCount) {
+  int k = 0;
+  while (Wire.available()) {
+    data[k] = Wire.read();
+    i++;
+  }
+}
+void sendData(){
+ //shift bits to get specific bytes from outPos
+  outVal[0] = outPos >> 8;
+  outVal[1] = outPos & 0x00FF;
+  Serial.println();
+  Wire.write(outVal, 2);
+  
+}

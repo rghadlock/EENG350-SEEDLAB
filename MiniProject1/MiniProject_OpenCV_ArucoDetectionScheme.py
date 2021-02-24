@@ -23,7 +23,10 @@ lcd.color = [0,0,100]
 time.sleep(1)
 bus = smbus.SMBus(1)
 address = 4
-size = 0
+
+size = 2
+
+
 
 def writeNumber(value):
     bus.write_i2c_block_data(address, 0, value)
@@ -33,6 +36,7 @@ def writeNumber(value):
 def readNumber():
     number = bus.read_i2c_block_data(address, 0, size)
     return number
+
 
 def createMarkers(): #run this program then print the markers that are saved in this program's directory
    aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250) #set aruco dictionary
@@ -98,20 +102,25 @@ def main():
                #show wheel position on lcd
                lcd.clear()
                desireRads = wheelPos * 3.14159 /180
-               msg = "Setpoint: %.3f" % (desireRads)#show radians on lcd
+               desireRads = int(desireRads * 1000)
+               sendRads = desireRads.to_bytes(2, byteorder = 'big')
+               writeNumber(sendRads)
+               msg = "Setpoint: %.3f" % (desireRads)
                lcd.message = msg
-               #get current position from arduino and display it on LCD
+
                ardPos = readNumer()
                curPos = int.from_bytes(ardPos, byteorder = 'big')
                RecievedPOSfromArduino = ((float)curPos * 6.283) / 3200;
                msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
                lcd.message = msg
-               #send desired position to arduino
-               desireRads = int(desireRads * 1000)
-               sendRads = desireRads.to_bytes(2, byteorder = 'big')
-               writeNumber(sendRads)
+
             else:
-               print("No Markers Found. Press Ctrl+C to Exit.")
+               print("No Markers Found")
             output.truncate(0) #clear image for new capture
+            print("\nPress Ctrl+C to exit")
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
+   
+#TODO
+   #send setpoint to Arduino
+   #Get current position from Arduino
