@@ -47,7 +47,7 @@ double inputVoltage = 0;
 double posErrSum = 0;
 //double kp = 2.10;
 //double ki = 0.137;
-double kp = 2.9229;
+double kp = 3.3;
 double ki = 0.2291;
 
 // sets encoder function
@@ -76,9 +76,9 @@ void setup() {
   Serial.begin(115200);
   
   //initialize i2c as slave
-//  Wire.begin(SLAVE_ADDRESS);
-//  Wire.onReceive(receiveData);
-//  Wire.onRequest(sendData);
+  Wire.begin(SLAVE_ADDRESS);
+  Wire.onReceive(receiveData);
+  Wire.onRequest(sendData);
   
   // assign Encoder and button pins as Inputs and motor Pins as output
   pinMode(CHANNEL_A, INPUT);
@@ -112,8 +112,8 @@ void loop() {
     posDes = posRec / 1000;
     // controller implementation
     posErr = posDes - posNow;
-    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum;
-    inputVoltage = (posErr * kp) + (posErrSum * ki);
+    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum; //add on error before for integral component
+    inputVoltage = (posErr * kp) + ((posErrSum * ki * SAMPLE_TIME) / 1000); //apply controller values to convert rad to voltage 
     if( inputVoltage > MAX_VOLTAGE){
       inputVoltage = MAX_VOLTAGE;
     }
