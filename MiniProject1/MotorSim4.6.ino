@@ -33,7 +33,7 @@
 // global variables
 unsigned long currentTime = 0;// holds time in ms of the start of the loop routine
 int motorOnFlag = 0;          // flag that represents whether or not the motor is on or off
-double posNow = 0;        // holds new radian reading
+double posNow = 0;            // holds new radian reading
 double oldRadians = 0;        // holds old raidan reading
 double angVelocity = 0;       // holds calculated angular velocity
 int voltage = 0;              // holds equivalent voltage put into the motor
@@ -41,14 +41,14 @@ byte outVal[2] = {0};         // holds bytes to send to pi
 byte dataRec[2] = {0};
 int outPos = 0;               // hold rotary encoder val
 
-double posDes = 0;
-double posErr = 0;
-double inputVoltage = 0;
-double posErrSum = 0;
+double posDes = 0;            //desired position in rad
+double posErr = 0;            //Error position in rad
+double inputVoltage = 0;      //voltage to send to motor in V
+double posErrSum = 0;         //sum of error in rad*seconds
 //double kp = 2.10;
 //double ki = 0.137;
-double kp = 3.3;
-double ki = 0.2291;
+double kp = 3.3;              //Proportional controller value in V/rad
+double ki = 0.2291;           //Integral controller value in V/(rad*seconds)
 
 // sets encoder function
 Encoder motorEnc(CHANNEL_A, CHANNEL_B);
@@ -105,15 +105,15 @@ void loop() {
     currentTime = millis();
     
     // takes position sample
-    posNow = ((double)motorEnc.read() * 6.283) / 3200;
-    outPos = motorEnc.read();                             //?????
+    posNow = ((double)motorEnc.read() * 6.283) / 3200;          //read current position from encoder and convert that to rad
+    outPos = motorEnc.read();                             
   //after desired position is recieved from pi, change into radians. 
     int posRec = (data[0] << 8) | (data[1]);
-    posDes = posRec / 1000;
+    posDes = posRec / 1000;                                     //desired position in rad
     // controller implementation
-    posErr = posDes - posNow;
-    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum; //add on error before for integral component
-    inputVoltage = (posErr * kp) + ((posErrSum * ki * SAMPLE_TIME) / 1000); //apply controller values to convert rad to voltage 
+    posErr = posDes - posNow;                                   //find diff in desired and current position in rad
+    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum;    //add on error before for integral component
+    inputVoltage = (posErr * kp) + (posErrSum * ki);            //apply controller values to convert rad to voltage 
     if( inputVoltage > MAX_VOLTAGE){
       inputVoltage = MAX_VOLTAGE;
     }
@@ -129,7 +129,7 @@ void loop() {
     analogWrite(MOTOR_SPEED, (abs(inputVoltage * 255) / MAX_VOLTAGE));
     
     //displays data
-    Serial.print((double)currentTime / 1000); // sample time in seconds
+    Serial.print((double)currentTime / 1000);                   // sample time in seconds
     Serial.print("\t");
     Serial.print(inputVoltage);
     Serial.print("\t");
