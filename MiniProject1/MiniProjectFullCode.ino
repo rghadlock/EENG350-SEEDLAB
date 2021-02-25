@@ -115,7 +115,7 @@ void loop() {
     // controller implementation
     posErr = posDes - posNow;
     posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum; //add on error before for integral component
-    inputVoltage = (posErr * kp) + ((posErrSum * ki * SAMPLE_TIME) / 1000); //apply controller values to convert rad to voltage 
+    inputVoltage = (posErr * kp) + (posErrSum * ki ); //apply controller values to convert rad to voltage 
     if( inputVoltage > MAX_VOLTAGE){
       inputVoltage = MAX_VOLTAGE;
     }
