@@ -100,14 +100,15 @@ def main():
                lcd.clear()
                desireRads = wheelPos * 3.14159 /180
                #send desired position to arduino
+               msg = "Setpoint: %.3f" % (desireRads)#show radians on lcd
+               lcd.message = msg
                desireRads = int(desireRads * 1000)
                
                byteRads = desireRads.to_bytes(2, byteorder = 'big')
                sendRads = [byteRads[0], byteRads[1]]
                
                writeNumber(sendRads)
-               msg = "Setpoint: %.3f" % (desireRads)#show radians on lcd
-               lcd.message = msg
+               
                #get current position from arduino and display it on LCD
                ardPos = readNumber()
             
