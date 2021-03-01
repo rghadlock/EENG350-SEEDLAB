@@ -4,7 +4,8 @@
   Colorado School of Mines 
   EENG350 Seed Lab - Mini Project
 
-  Purpose: 
+  Purpose: This file was used to determine the transfer function of the motor using a step response experiment.
+  The time and velocity of the motor are serial outputted.
   
   Note: 
   There will be a time error after 50 days. This problem is not addressed because the
