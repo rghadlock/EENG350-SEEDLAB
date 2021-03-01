@@ -1,9 +1,11 @@
 /*
-  Motor Controller
-  by Jacob Bommersbach Nolan Egging (February 2021)
+  Full Mini Project Arduino Code
+  by Group 9: Harrison Baer, Jacob Bommersbach, Nolan Egging, Robert Hadlokc (February 2021)
   Colorado School of Mines 
   EENG350 Seed Lab - Mini Project
-  Purpose: 
+  
+  Purpose: This script implements the motor controller. Desired position is sent in via I2C and a corresponding voltage is
+  sent to the motor.
   
   Note: 
   There will be a time error after 50 days. This problem is not addressed because the
