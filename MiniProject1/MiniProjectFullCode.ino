@@ -33,31 +33,27 @@
 // global variables
 unsigned long currentTime = 0;// holds time in ms of the start of the loop routine
 int motorOnFlag = 0;          // flag that represents whether or not the motor is on or off
-double posNow = 0;        // holds new radian reading
+double posNow = 0;            // holds new radian reading
 double oldRadians = 0;        // holds old raidan reading
 double angVelocity = 0;       // holds calculated angular velocity
 int voltage = 0;              // holds equivalent voltage put into the motor
 byte outVal[2] = {0};         // holds bytes to send to pi
 byte dataRec[4] = {0};
-int outPos = 0;               // hold rotary encoder val
+int outPos = 0;               // hold rotary encoder val in counts
 
-double posDes = 0;
-double posErr = 0;
-double inputVoltage = 0;
-double posErrSum = 0;
-//double kp = 2.10;
-//double ki = 0.137;
-double kp = 3.3;
-double ki = 0.2291;
-int posRec = 0;
+double posDes = 0;            //Desired Position variable in rad
+double posErr = 0;            //Error Position variable in rad
+double inputVoltage = 0;      //Voltage sent to Motor variable in Volts
+double posErrSum = 0;         //sum of position error variable in rad*s
+double kp = 3.3;              //Proportional Gain value in Volts/Rad
+double ki = 0.2291;           //Integral Gain value in Volts/(Rad*s)
+int posRec = 0;               //Desired Position from I2C in int form 
 
 // sets encoder function
 Encoder motorEnc(CHANNEL_A, CHANNEL_B);
 
-
 // ISR that detects when the reset button is pressed
 void resetISR(void){
-
    // changes desired button
   if (motorOnFlag == 0) {
     motorOnFlag = 1;
@@ -102,35 +98,35 @@ void setup() {
 // loop routine
 void loop() {
   
-    // measures time for delay
-    currentTime = millis();
+   
+    currentTime = millis();                                   //Measures time for delay
+   
+    posNow = ((double)motorEnc.read() * 6.283) / 3200;        //Convert counts to angular position in rad
+    outPos = motorEnc.read();                                 //Read encoder count to send to Pi                   
     
-    // takes position sample
-    posNow = ((double)motorEnc.read() * 6.283) / 3200;
-    outPos = motorEnc.read();                             //?????
-  //after desired position is recieved from pi, change into radians. 
-    
-    posDes = (double)posRec / (double) 1000;
+    posDes = (double)posRec / (double) 1000;                  //Convert the Desired Position from Pi to a radian value
     
     // controller implementation
-    posErr = posDes - posNow;
-    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum; //add on error before for integral component
-    inputVoltage = (posErr * kp) + (posErrSum * ki ); //apply controller values to convert rad to voltage 
-    if( inputVoltage > MAX_VOLTAGE){
-      inputVoltage = MAX_VOLTAGE;
-    }
-    else if(inputVoltage < (-1* MAX_VOLTAGE)){
-      inputVoltage = (-1 * MAX_VOLTAGE);
-    }
-    if(inputVoltage < 0){
-      digitalWrite(MOTOR_DIRECTION, LOW);
-    }
-    else{
-      digitalWrite(MOTOR_DIRECTION, HIGH);
-    }
-    analogWrite(MOTOR_SPEED, (abs(inputVoltage * 255) / MAX_VOLTAGE));
+    posErr = posDes - posNow;                                 //Calculate Error Position
+    posErrSum = ((posErr * SAMPLE_TIME) / 1000) + posErrSum;  //Add on error before for integral component
+    inputVoltage = (posErr * kp) + (posErrSum * ki );         //Apply controller values to convert rad to voltage 
     
-    //displays data
+    if( inputVoltage > MAX_VOLTAGE){                          //Check if the input voltage will be saturated
+      inputVoltage = MAX_VOLTAGE;                             //Set voltage to max
+    }
+    else if(inputVoltage < (-1* MAX_VOLTAGE)){                //Check if the input voltage will be saturated on the negative side
+      inputVoltage = (-1 * MAX_VOLTAGE);                      //Set voltage to Max in oppisite direction
+    }
+    if(inputVoltage < 0){                                     //Check if Input voltage is negative
+      digitalWrite(MOTOR_DIRECTION, LOW);                     //Set the Motor to turn Counter-Clock-Wise
+    }
+    else{                                                     //Otherwise
+      digitalWrite(MOTOR_DIRECTION, HIGH);                    //Set Motor to turn Clock-Wise
+    }
+    analogWrite(MOTOR_SPEED, (abs(inputVoltage * 255) / MAX_VOLTAGE)); // Write the voltage to the Motor
+    
+    //Displays in the serial monitor the time, input voltage, current Radial position, error position, and sum of position error seperated by tabs for monitoring purposes
+
     Serial.print((double)currentTime / 1000); // sample time in seconds
     Serial.print("\t");
     Serial.print(inputVoltage);
@@ -141,8 +137,7 @@ void loop() {
     Serial.print("\t");
     Serial.print(posErrSum);
     Serial.print("\t");
-    Serial.print(MAX_VOLTAGE);
-    Serial.print("\n\r");
+    
    
     // ensures function isn't taking too long
     if (millis() > (currentTime + SAMPLE_TIME)) Serial.println("ERROR: Under Sampling!");
