@@ -42,8 +42,7 @@ void setup() {
   pinMode(CHANNEL_LA, INPUT);
   pinMode(CHANNEL_RB, INPUT);
   pinMode(CHANNEL_LB, INPUT);
-  pinMode(ENABLE_R, OUTPUT);
-  pinMode(ENABLE_L, OUTPUT);
+  pinMode(ENABLE, OUTPUT);
   pinMode(DIRECTION_R, OUTPUT);
   pinMode(DIRECTION_L, OUTPUT);
   pinMode(SPEED_R, OUTPUT);
