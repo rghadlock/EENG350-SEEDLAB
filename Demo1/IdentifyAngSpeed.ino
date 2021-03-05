@@ -19,14 +19,14 @@
 // pins
 #define CHANNEL_RA      2     // encoder input pin for right motor channel A
 #define CHANNEL_LA      3     // encoder input pin for left motor channel A
-#define CHANNEL_RB      4     // encoder input pin for right motor channel B
-#define CHANNEL_LB      5     // encoder input pin for left motor channel B
-#define ENABLE_R        6     // enables right motor
-#define ENABLE_L        7     // enables left motor
-#define DIRECTION_R     8     // right motor direction
-#define DIRECTION_L     9     // left motor direction
-#define SPEED_R         10    // PWM pin for right motor speed
-#define SPEED_L         11    // PWM pin for left motor speed    
+#define CHANNEL_RB      5     // encoder input pin for right motor channel B
+#define CHANNEL_LB      6     // encoder input pin for left motor channel B
+#define ENABLE          4     // enables right motor
+
+#define DIRECTION_R     7     // right motor direction
+#define DIRECTION_L     8     // left motor direction
+#define SPEED_R         9    // PWM pin for right motor speed
+#define SPEED_L         10    // PWM pin for left motor speed    
 
 // sets encoder functions
 Encoder rightEnc(CHANNEL_RA, CHANNEL_RB);
@@ -42,16 +42,14 @@ void setup() {
   pinMode(CHANNEL_LA, INPUT);
   pinMode(CHANNEL_RB, INPUT);
   pinMode(CHANNEL_LB, INPUT);
-  pinMode(ENABLE_R, OUTPUT);
-  pinMode(ENABLE_L, OUTPUT);
+  pinMode(ENABLE, OUTPUT);
   pinMode(DIRECTION_R, OUTPUT);
   pinMode(DIRECTION_L, OUTPUT);
   pinMode(SPEED_R, OUTPUT);
   pinMode(SPEED_L, OUTPUT);
 
   // enables motors
-  digitalWrite(ENABLE_R, HIGH);
-  digitalWrite(ENABLE_L, HIGH);
+  digitalWrite(ENABLE, HIGH);
 
   // writes direction to motor
   digitalWrite(DIRECTION_R, HIGH);
