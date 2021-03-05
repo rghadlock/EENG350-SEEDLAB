@@ -54,7 +54,7 @@ void setup() {
 
   // writes direction to motor
   digitalWrite(DIRECTION_R, HIGH);
-  digitalWrite(DIRECTION_L, LOW);
+  digitalWrite(DIRECTION_L, HIGH);
   
 } // end of setup
 
