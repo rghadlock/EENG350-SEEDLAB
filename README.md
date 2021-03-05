@@ -2,4 +2,4 @@
 Group #9
 Members: Robert Hadlock, Nolan Egging, Harrison Baer, Jacob Bommersbach
 
-Respository for SEED LAb Projects
+Respository for SEED Lab Projects
