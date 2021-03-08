@@ -1,7 +1,7 @@
-/* IdentifySpeed.ino
+/* IdentifySpeedLR.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
- * robot speed.
+ * robot speed for each wheel.
  * 
  */
 
