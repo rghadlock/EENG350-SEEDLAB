@@ -87,7 +87,7 @@ void loop() {
     angVel_R = (1000 * (newDeg_R - oldDeg_R)) / SAMPLE_TIME;
     angVel_L = (1000 * (newDeg_L - oldDeg_L)) / SAMPLE_TIME;
     velocity_R = WHEEL_RADIUS * angVel_R * RAD_IN_DEG;
-    velocity_L = WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
+    velocity_L = -WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
     
     // displays samples
     Serial.print((double)currentTime / 1000); // sample time in seconds
