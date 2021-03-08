@@ -12,7 +12,7 @@
 #define SAMPLE_TIME     10    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
-#define WHEEL_RADIUS    0.1   // radius of wheel in meters
+#define WHEEL_RADIUS    0.075   // radius of wheel in meters
 #define RAD_IN_DEG      0.01745329  // used for converting degrees to radians.
 #define START_DELAY     1000  // start delay in millisconds
 
@@ -51,10 +51,9 @@ void setup() {
   // enables motors
   digitalWrite(ENABLE, HIGH);
 
-
   // writes direction to motor
-  digitalWrite(DIRECTION_R, HIGH);
-  digitalWrite(DIRECTION_L, HIGH);
+  digitalWrite(DIRECTION_R, LOW);
+  digitalWrite(DIRECTION_L, LOW);
   
 } // end of setup
 
