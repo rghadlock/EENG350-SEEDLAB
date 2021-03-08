@@ -12,8 +12,8 @@
 #define SAMPLE_TIME     10    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
-#define WHEEL_RADIUS    0.1   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.1   // distance between wheels in meters
+#define WHEEL_RADIUS    0.075   // radius of wheel in meters
+#define WHEEL_DISTANCE  0.272   // distance between wheels in meters
 #define START_DELAY     1000  // start delay in millisconds
 
 // pins
