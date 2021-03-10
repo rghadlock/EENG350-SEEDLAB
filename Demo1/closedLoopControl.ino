@@ -96,7 +96,7 @@ void loop() {
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = 3;     
+      desPos = 1;     
     }
     
     // takes sample of angular velocity
