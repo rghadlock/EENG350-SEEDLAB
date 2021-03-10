@@ -149,6 +149,10 @@ void loop() {
     Serial.print(actSpeed_R);
     Serial.print("\t");
     Serial.print(actSpeed_L);
+    Serial.print("\t");
+    Serial.print(errSum_R);
+    Serial.print("\t");
+    Serial.print(errSum_L);
     Serial.print("\n\r");
     
     // reassigns old degree variables
