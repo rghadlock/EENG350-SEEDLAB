@@ -1,4 +1,4 @@
-/* IdentifySpeedLR.ino
+/* closedLoopControl.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
  * robot speed for each wheel.
@@ -96,7 +96,7 @@ void loop() {
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = 3;     
+      desPos = 1;     
     }
     
     // takes sample of angular velocity
@@ -110,7 +110,7 @@ void loop() {
     actSpeed_L = -WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
 
     actPos_R = (((double)rightEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS;
-    actPos_L = (-1 *(((double)leftEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS);
+    actPos_L = (-1*(((double)leftEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS);
 
     errPos_R = desPos - actPos_R;
     errPos_L = desPos - actPos_L;
