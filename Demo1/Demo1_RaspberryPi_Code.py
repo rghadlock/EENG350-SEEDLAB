@@ -82,43 +82,47 @@ def main():
                dMid = (dL + dR) /2 #horizontal distance from center of screen to center of marker (x direction)
                angle = dMid * 28/960
                print("Angle: ", angle)
-               #determine wheel setpoint
-               centerY = (corners[0][0][0][1] + corners[0][0][3][1])/2 #y coordinate of center of marker
-               #540 is half of 1080. middle of screen y direction
-               if (angle < 0): #left side of image
-                  if (centerY < 540): #top half of image
-                     wheelPos = 0 #deg = 0 rad
-                  else: #bottom half of image
-                     wheelPos = 270 #deg = 3pi/2
-               else: #right side of image
-                  if (centerY < 540): #top half of image
-                     wheelPos = 90 #deg = pi/2
-                  else: #bottom half of image
-                     wheelPos = 180 #deg = pi
-               print("Desired Wheel Position (degrees): ", wheelPos)#print degrees
-               #show wheel position on lcd
                lcd.clear()
-               desireRads = wheelPos * 3.14159 /180
+               msg = "Setpoint: %.3f" % (angle)#show angle on lcd
+               lcd.message = msg
+
+               #determine wheel setpoint
+               #centerY = (corners[0][0][0][1] + corners[0][0][3][1])/2 #y coordinate of center of marker
+               #540 is half of 1080. middle of screen y direction
+               #if (angle < 0): #left side of image
+                  #if (centerY < 540): #top half of image
+                     #wheelPos = 0 #deg = 0 rad
+                  #else: #bottom half of image
+                     #wheelPos = 270 #deg = 3pi/2
+               #else: #right side of image
+                  #if (centerY < 540): #top half of image
+                     #wheelPos = 90 #deg = pi/2
+                  #else: #bottom half of image
+                     #wheelPos = 180 #deg = pi
+               #print("Desired Wheel Position (degrees): ", wheelPos)#print degrees
+               #show wheel position on lcd
+               #lcd.clear()
+               #desireRads = wheelPos * 3.14159 /180
                #send desired position to arduino
-               msg = "Setpoint: %.3f" % (desireRads)#show radians on lcd
-               lcd.message = msg
-               desireRads = int(desireRads * 1000)
+               #desireRads = int(desireRads * 1000)
                
-               byteRads = desireRads.to_bytes(2, byteorder = 'big')
-               sendRads = [byteRads[0], byteRads[1]]
+               #byteRads = desireRads.to_bytes(2, byteorder = 'big')
+               #sendRads = [byteRads[0], byteRads[1]]
                
-               writeNumber(sendRads)
-               
+               #writeNumber(sendRads)
+               #msg = "Setpoint: %.3f" % (desireRads/1000)#show radians on lcd
+               #lcd.message = msg
                #get current position from arduino and display it on LCD
-               ardPos = readNumber()
+               #ardPos = readNumber()
             
-               curPos = int.from_bytes(ardPos, byteorder = 'big')
-               RecievedPOSfromArduino = (float(curPos) * 6.283) / 3200;
-               msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
-               lcd.message = msg
+               #curPos = int.from_bytes(ardPos, byteorder = 'big')
+               #RecievedPOSfromArduino = (float(curPos) * 6.283) / 3200;
+               #msg = "\nPosition: %.3f" % (RecievedPOSfromArduino)
+               #lcd.message = msg
                
             else:
                print("No Markers Found. Press Ctrl+C to Exit.")
             output.truncate(0) #clear image for new capture
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
+
