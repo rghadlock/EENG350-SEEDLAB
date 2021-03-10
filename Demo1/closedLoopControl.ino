@@ -1,4 +1,4 @@
-/* IdentifySpeedLR.ino
+/* closedLoopControl.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
  * robot speed for each wheel.
@@ -112,8 +112,8 @@ void loop() {
     actPos_R = (((double)rightEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS;
     actPos_L = (((double)leftEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS;
 
-    errPos_R = desPos_R - actPos_R;
-    errPos_L = desPos_L - actPos_L;
+    errPos_R = desPos - actPos_R;
+    errPos_L = desPos - actPos_L;
 
     desSpeed_R = errPos_R* KV_R;
     desSpeed_L = errPos_L* KV_L;
@@ -136,8 +136,8 @@ void loop() {
     if(voltage_L < 0)digitalWrite(DIRECTION_L, HIGH);
     else digitalWrite(DIRECTION_L, LOW);  
     
-    analogWrite(MOTOR_SPEED_R, abs(voltage_R*255/ MAX_VOLTAGE));
-    analogWrite(MOTOR_SPEED_L, abs(voltage_L*255/ MAX_VOLTAGE));
+    analogWrite(SPEED_R, abs(voltage_R*255/ MAX_VOLTAGE));
+    analogWrite(SPEED_L, abs(voltage_L*255/ MAX_VOLTAGE));
     
     // displays samples
     Serial.print((double)currentTime / 1000); // sample time in seconds
