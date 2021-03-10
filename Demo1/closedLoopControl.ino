@@ -96,12 +96,12 @@ void loop() {
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = 1;     
+      desPos = 3;     
     }
     
     // takes sample of angular velocity
     newDeg_R = ((double)rightEnc.read() * 360) / 3200;
-    newDeg_L = ((double)leftEnc.read() * 360) / 3200;
+    newDeg_L = (-1*((double)leftEnc.read() * 360) / 3200);
 
     // calculates angular velocity and straightforward velocity
     angVel_R = (1000 * (newDeg_R - oldDeg_R)) / SAMPLE_TIME;
@@ -110,7 +110,7 @@ void loop() {
     actSpeed_L = -WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
 
     actPos_R = (((double)rightEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS;
-    actPos_L = (((double)leftEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS;
+    actPos_L = (-1 *(((double)leftEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS);
 
     errPos_R = desPos - actPos_R;
     errPos_L = desPos - actPos_L;
@@ -146,9 +146,9 @@ void loop() {
     Serial.print("\t");
     Serial.print(actPos_L);
     Serial.print("\t");
-    Serial.print(errSum_R);
+    Serial.print(actSpeed_R);
     Serial.print("\t");
-    Serial.print(errSum_L);
+    Serial.print(actSpeed_L);
     Serial.print("\n\r");
     
     // reassigns old degree variables
