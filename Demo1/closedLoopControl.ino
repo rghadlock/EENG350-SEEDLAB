@@ -12,7 +12,7 @@
 #define SAMPLE_TIME     10    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
-#define WHEEL_RADIUS    0.075   // radius of wheel in meters
+#define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define RAD_IN_DEG      0.01745329  // used for converting degrees to radians.
 #define START_DELAY     3000  // start delay in millisconds
 
@@ -30,8 +30,8 @@
 
 double KV_L = 0.4;
 double KV_R = 0.4;
-double KI_L = 10;
-double KI_R = 10.5;
+double KI_L = 16.5;
+double KI_R = 17;
 double desSpeed_L = 0;
 double desSpeed_R = 0;
 double errPos_L = 0;
