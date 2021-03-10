@@ -107,7 +107,7 @@ void loop() {
     angVel_R = (1000 * (newDeg_R - oldDeg_R)) / SAMPLE_TIME;
     angVel_L = (1000 * (newDeg_L - oldDeg_L)) / SAMPLE_TIME;
     actSpeed_R = WHEEL_RADIUS * angVel_R * RAD_IN_DEG;
-    actSpeed_L = -WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
+    actSpeed_L = WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
 
     actPos_R = (((double)rightEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS;
     actPos_L = (-1 *(((double)leftEnc.read() * 6.2832) / 3200)* WHEEL_RADIUS);
