@@ -1,4 +1,4 @@
-/* closedLoopControl.ino
+/* DistanceControl.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
  * robot speed for each wheel.
