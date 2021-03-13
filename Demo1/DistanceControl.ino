@@ -142,17 +142,17 @@ void loop() {
     // displays samples
     Serial.print((double)currentTime / 1000); // sample time in seconds
     Serial.print("\t");
-    Serial.print(actPos_R);
+    Serial.print(actPos_R, 4);
     Serial.print("\t");
-    Serial.print(actPos_L);
+    Serial.print(actPos_L, 4);
     Serial.print("\t");
-    Serial.print(actSpeed_R);
+    Serial.print(actSpeed_R, 4);
     Serial.print("\t");
-    Serial.print(actSpeed_L);
+    Serial.print(actSpeed_L, 4);
     Serial.print("\t");
-    Serial.print(errSum_R);
+    Serial.print(errSum_R, 4);
     Serial.print("\t");
-    Serial.print(errSum_L);
+    Serial.print(errSum_L, 4);
     Serial.print("\n\r");
     
     // reassigns old degree variables
