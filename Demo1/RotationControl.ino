@@ -5,7 +5,7 @@
  * 
  */
 
- // libraries
+// libraries
 #include <Encoder.h>
 
 // constants
@@ -24,13 +24,13 @@
 #define CHANNEL_RB      5     // encoder input pin for right motor channel B
 #define CHANNEL_LB      6     // encoder input pin for left motor channel B
 #define ENABLE          4     // enables right motor
-
 #define DIRECTION_R     7     // right motor direction
 #define DIRECTION_L     8     // left motor direction
 #define SPEED_R         9    // PWM pin for right motor speed
-#define SPEED_L         10    // PWM pin for left motor speed    
+#define SPEED_L         10    // PWM pin for left motor speed   
 
-double KV = 0.5;
+// global variables
+double Kv = 0.5;
 double KI_L =.03;
 double KI_R = .022;
 double desAng = 0;
@@ -47,7 +47,6 @@ double actWheelAngSpeed_R = 0;
 double actWheelAngSpeed_L = 0;
 double actAng = 0;
 double actRobotAngSpeed = 0;
-
 double errSumAng_R = 0;
 double errSumAng_L = 0;
 
@@ -74,10 +73,6 @@ void setup() {
   // enables motors
   digitalWrite(ENABLE, HIGH);
 
-  // writes direction to motor
-  digitalWrite(DIRECTION_R, LOW);
-  digitalWrite(DIRECTION_L, LOW);
-  
 } // end of setup
 
 void loop() {
@@ -91,82 +86,37 @@ void loop() {
     static double angVel_R = 0;
     static double angVel_L = 0;
 
-
- 
-    
     // measures time for delay
     currentTime = millis();
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = 1;     
+      desPos = 270;     
     }
-    
-    // takes sample of angular velocity
+
+    // takes angle sample
     newDeg_R = ((double)rightEnc.read() * 360) / 3200;
-    newDeg_L = ((double)leftEnc.read() * 360) / 3200;
+    newDeg_L = -((double)leftEnc.read() * 360) / 3200;
+    actAng = (WHEEL_RADIUS / WHEEL_DISTANCE) * (newDeg_R - newDeg_L):
 
-    // calculates angular velocity and straightforward velocity
-    actWheelAngSpeed_R = (1000 * (newDeg_R - oldDeg_R)) / SAMPLE_TIME;
-    actWheelAngSpeed_L = (1000 * (newDeg_L - oldDeg_L)) / SAMPLE_TIME;
-
-    actAng = (((double)rightEnc.read() * 360) / 3200) +(((double)leftEnc.read() * 360) / 3200);
-    errAng = desAng - actAng;
-
-    desRobotAngSpeed = errAng * Kv;
-
-    desWheelAngSpeed = (desRobotAngSpeed * WHEEL_DISTANCE)/(2*WHEEL_RADIUS);        
-
-    if(desWheelAngSpeed > ANG_SATURATION)desWheelAngSpeed = ANG_SATURATION;
-    if(desWheelAngSpeed > -ANG_SATURATION)desWheelAngSpeed = -ANG_SATURATION
-
-    errWheelAngSpeed_R = desWheelAngSpeed - actWheelAngSpeed_R;
-    errWheelAngSpeed_L = desWheelAngSpeed - actWheelAngSpeed_L;
-
-    errSumAng_R = ((errWheelAngSpeed_R * SAMPLE_TIME) / 1000) + errSumAng_R;
-    errSumAng_R = ((errWheelAngSpeed_R * SAMPLE_TIME) / 1000) + errSumAng_R;
-
-    voltage_R = errSumAng_R *KI_R;
-    voltage_L = errSumAng_L *KI_L;
-
-
-
-    if(voltage_R > MAX_VOLTAGE)voltage_R = MAX_VOLTAGE;
-    else if(voltage_R < (-1*MAX_VOLTAGE))voltage_R = (-1 *MAX_VOLTAGE);
-    if(voltage_L > MAX_VOLTAGE)voltage_L = MAX_VOLTAGE;
-    else if(voltage_L < (-1*MAX_VOLTAGE))voltage_L = (-1 *MAX_VOLTAGE);
-    if(voltage_R < 0)digitalWrite(DIRECTION_R, HIGH);
-    else digitalWrite(DIRECTION_R, LOW);
-    if(voltage_L < 0)digitalWrite(DIRECTION_L, HIGH);
-    else digitalWrite(DIRECTION_L, LOW);  
-    
-    analogWrite(SPEED_R, abs(voltage_R*255/ MAX_VOLTAGE));
-    analogWrite(SPEED_L, abs(voltage_L*255/ MAX_VOLTAGE));
-    
     // displays samples
     Serial.print((double)currentTime / 1000); // sample time in seconds
     Serial.print("\t");
-    Serial.print(actPos_R, 4);
+    Serial.print(newDeg_R, 2);
     Serial.print("\t");
-    Serial.print(actPos_L, 4);
+    Serial.print(newDeg_L, 2);
     Serial.print("\t");
-    Serial.print(actSpeed_R, 4);
-    Serial.print("\t");
-    Serial.print(actSpeed_L, 4);
-    Serial.print("\t");
-    Serial.print(errSum_R, 4);
-    Serial.print("\t");
-    Serial.print(errSum_L, 4);
+    Serial.print(actAng, 2);
     Serial.print("\n\r");
     
     // reassigns old degree variables
     oldDeg_R = newDeg_R;
     oldDeg_L = newDeg_L;
-
+    
     // ensures function isn't taking too long
     if (millis() > (currentTime + SAMPLE_TIME)) Serial.println("ERROR: Under Sampling!");
     
     // creates delay of SAMPLE_TIME ms
     while(millis() < (currentTime + SAMPLE_TIME));
-    
+
 } // end of loop
