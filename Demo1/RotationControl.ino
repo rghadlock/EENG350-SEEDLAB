@@ -39,6 +39,8 @@ double desAngSpeed_R = 0;
 double errAng = 0;
 double desRobotAngSpeed = 0;
 double desWheelAngSpeed = 0;
+double desWheelAngSpeed_R = 0;
+double desWheelAngSpeed_L = 0;
 double errWheelAngSpeed_R = 0;
 double errWheelAngSpeed_L = 0;
 double voltage_R = 0;
@@ -91,21 +93,62 @@ void loop() {
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = 270;     
+      desAng = 270;     
     }
 
     // takes angle sample
     newDeg_R = ((double)rightEnc.read() * 360) / 3200;
     newDeg_L = -((double)leftEnc.read() * 360) / 3200;
-    actAng = (WHEEL_RADIUS / WHEEL_DISTANCE) * (newDeg_R - newDeg_L):
+    actAng = (WHEEL_RADIUS / WHEEL_DISTANCE) * (newDeg_R - newDeg_L);
+    errAng = desAng - actAng;
 
+    // calculates angular velocity
+    actWheelAngSpeed_R = (1000 * (newDeg_R - oldDeg_R)) / SAMPLE_TIME;
+    actWheelAngSpeed_L = (1000 * (newDeg_L - oldDeg_L)) / SAMPLE_TIME;
+    
+    // calculates desired Robot angular speed and individual wheel speed
+    desRobotAngSpeed = errAng * Kv;
+    desWheelAngSpeed = (desRobotAngSpeed * WHEEL_DISTANCE)/(2*WHEEL_RADIUS);
+    // makes sure the desWheelAngSpeed is below saturation
+    if(desWheelAngSpeed > ANG_SATURATION) desWheelAngSpeed = ANG_SATURATION;
+    if(desWheelAngSpeed < -ANG_SATURATION) desWheelAngSpeed = -ANG_SATURATION;
+    desWheelAngSpeed_R = desWheelAngSpeed;
+    desWheelAngSpeed_L = -desWheelAngSpeed;
+
+    // calculates the error sum of angular speeds
+    errWheelAngSpeed_R = desWheelAngSpeed_R - actWheelAngSpeed_R;
+    errWheelAngSpeed_L = desWheelAngSpeed_L - actWheelAngSpeed_L;
+    errSumAng_R = ((errWheelAngSpeed_R * SAMPLE_TIME) / 1000) + errSumAng_R;
+    errSumAng_L = ((errWheelAngSpeed_L * SAMPLE_TIME) / 1000) + errSumAng_L;
+
+    // deterimines voltage of the wheels
+    voltage_R = errSumAng_R * KI_R;
+    voltage_L = errSumAng_L * KI_L;
+
+    // prevents voltage overflow
+    if(voltage_R > MAX_VOLTAGE)voltage_R = MAX_VOLTAGE;
+    else if(voltage_R < (-1*MAX_VOLTAGE))voltage_R = (-1 *MAX_VOLTAGE);
+    if(voltage_L > MAX_VOLTAGE)voltage_L = MAX_VOLTAGE;
+    else if(voltage_L < (-1*MAX_VOLTAGE))voltage_L = (-1 *MAX_VOLTAGE);
+
+    // determines direction of each motorr and then writes to the motor
+    if(voltage_R < 0) digitalWrite(DIRECTION_R, HIGH);
+    else digitalWrite(DIRECTION_R, LOW);
+    if(voltage_L < 0) digitalWrite(DIRECTION_L, HIGH);
+    else digitalWrite(DIRECTION_L, LOW); 
+    analogWrite(SPEED_R, abs(voltage_R*255/ MAX_VOLTAGE));
+    analogWrite(SPEED_L, abs(voltage_L*255/ MAX_VOLTAGE));
+    
     // displays samples
     Serial.print((double)currentTime / 1000); // sample time in seconds
     Serial.print("\t");
-    Serial.print(newDeg_R, 2);
-    Serial.print("\t");
+    Serial.print("L:");
     Serial.print(newDeg_L, 2);
     Serial.print("\t");
+    Serial.print("R:");
+    Serial.print(newDeg_R, 2);
+    Serial.print("\t");
+    Serial.print("T:");
     Serial.print(actAng, 2);
     Serial.print("\n\r");
     
