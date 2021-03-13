@@ -13,7 +13,7 @@
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
-#define WHEEL_DISTANCE  1    //?????????
+#define WHEEL_DISTANCE  0.272
 #define RAD_IN_DEG      0.01745329  // used for converting degrees to radians.
 #define START_DELAY     3000  // start delay in millisconds
 #define ANG_SATURATION  300
@@ -115,7 +115,7 @@ void loop() {
 
     desRobotAngSpeed = errAng * Kv;
 
-    desWheelAngSpeed = (desRobotAngSpeed * WHEEL_DISTANCE)/(2*WHEEL_RADIUS);        //Add wheel distance
+    desWheelAngSpeed = (desRobotAngSpeed * WHEEL_DISTANCE)/(2*WHEEL_RADIUS);        
 
     if(desWheelAngSpeed > ANG_SATURATION)desWheelAngSpeed = ANG_SATURATION;
     if(desWheelAngSpeed > -ANG_SATURATION)desWheelAngSpeed = -ANG_SATURATION
