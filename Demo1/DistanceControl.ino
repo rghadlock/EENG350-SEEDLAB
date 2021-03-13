@@ -9,7 +9,7 @@
 #include <Encoder.h>
 
 // constants
-#define SAMPLE_TIME     10    // sampling time in milliseconds
+#define SAMPLE_TIME     20    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
