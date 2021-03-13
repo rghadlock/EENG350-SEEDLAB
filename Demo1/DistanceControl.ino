@@ -28,8 +28,8 @@
 #define SPEED_R         9    // PWM pin for right motor speed
 #define SPEED_L         10    // PWM pin for left motor speed    
 
-double KV_L = 0.3;
-double KV_R = 0.3;
+double KV_L = 0.4;
+double KV_R = 0.4;
 double KI_L = 11.5;
 double KI_R = 12;
 double desSpeed_L = 0;
