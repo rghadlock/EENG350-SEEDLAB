@@ -114,15 +114,25 @@ void loop() {
     static double oldDeg_L = 0;
     static double angVel_R = 0;
     static double angVel_L = 0;
+    static bool startFlag = 0;
+    static bool endFlag = 0;
 
     // measures time for delay
     currentTime = millis();
 
     // starts motor after appropriate time delay
-    if (millis() >= START_DELAY) desRot = 360;     
+    if ((millis() >= START_DELAY) && !startFlag) {
+      desRot = 360;     
+      startFlag = 1;
+    }
 
     // stops motor after appropriate time delay
-    if ((millis() >= END_DELAY) || (abs(desRot - actRot) < 0.1)) resetRotation();
+    if (((millis() >= END_DELAY) || (abs(desRot - actRot) < 0.1)) && !endFlag) {
+      resetRotation();
+      oldDeg_R = 0;
+      oldDeg_L = 0;
+      endFlag = 1;
+    }
 
     // takes angle sample
     actAng_R = ((double)rightEnc.read() * 360) / 3200;
