@@ -178,6 +178,12 @@ void loop() {
     Serial.print("\t");
     Serial.print("T:");
     Serial.print(actRot, 2);
+    Serial.print("\t");
+    Serial.print("DL:");
+    Serial.print(desAng_L, 2);
+   Serial.print("\t");
+    Serial.print("DR:");
+    Serial.print(desAng_R, 2);
     Serial.print("\n\r");
 
     // reassigns old degree variables
