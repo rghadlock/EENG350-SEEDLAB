@@ -10,15 +10,15 @@
 
 
 // constants
-#define SAMPLE_TIME     20    // sampling time in milliseconds
+#define SAMPLE_TIME     40    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.300
+#define WHEEL_DISTANCE  0.290
 #define RAD_IN_DEG      0.01745329  // used for converting degrees to radians.
 #define START_DELAY     3000  // start delay in millisconds
 #define END_DELAY       18000
-#define ANG_SATURATION  300
+#define ANG_SATURATION  200
 
 // pins
 #define CHANNEL_RA      2     // encoder input pin for right motor channel A
@@ -35,7 +35,9 @@
 double Kv_L = 0.70;
 double Kv_R = 0.70;
 double Ki_L = 0.03;
-double Ki_R = 0.022;
+double Ki_R = 0.03;
+double Kp_L = 0.01;
+double Kp_R = 0.01;
 double desRot = 0;
 double desAng_L = 0;
 double desAng_R = 0;
@@ -122,16 +124,8 @@ void loop() {
 
     // starts motor after appropriate time delay
     if ((millis() >= START_DELAY) && !startFlag) {
-      desRot = 360;     
+      desRot = 45;     
       startFlag = 1;
-    }
-
-    // stops motor after appropriate time delay
-    if (((millis() >= END_DELAY) || (abs(desRot - actRot) < 0.1)) && !endFlag) {
-      resetRotation();
-      oldDeg_R = 0;
-      oldDeg_L = 0;
-      endFlag = 1;
     }
 
     // takes angle sample
@@ -166,10 +160,10 @@ void loop() {
     errorAngSpeedSum_L = ((errorAngSpeed_L * SAMPLE_TIME) / 1000) + errorAngSpeedSum_L;
 
     // determines voltage of motors and prevents overflow
-    voltage_R = errorAngSpeedSum_R * Ki_R;
+    voltage_R = (errorAngSpeedSum_R * Ki_R) + (errorAngSpeed_R * Kp_R);
     if(voltage_R > MAX_VOLTAGE) voltage_R = MAX_VOLTAGE;
     else if(voltage_R < (-1*MAX_VOLTAGE)) voltage_R = (-1 *MAX_VOLTAGE);
-    voltage_L = errorAngSpeedSum_L * Ki_L;
+    voltage_L = (errorAngSpeedSum_L * Ki_L) + (errorAngSpeed_L * Kp_L);
     if(voltage_L > MAX_VOLTAGE) voltage_L = MAX_VOLTAGE;
     else if(voltage_L < (-1*MAX_VOLTAGE)) voltage_L = (-1 *MAX_VOLTAGE);
 
