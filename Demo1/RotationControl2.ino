@@ -141,7 +141,7 @@ void loop() {
 
     // determines desired angular speeds
     desAngSpeed_R = Kv_R * errorAng_R;
-    desAngSpeed_L = Kv_L * errorAng_R;
+    desAngSpeed_L = Kv_L * errorAng_L;
     if (desAngSpeed_R > ANG_SATURATION) desAngSpeed_R = ANG_SATURATION;
     else if (desAngSpeed_R < -ANG_SATURATION) desAngSpeed_R = -ANG_SATURATION;
     if (desAngSpeed_L > ANG_SATURATION) desAngSpeed_L = ANG_SATURATION;
