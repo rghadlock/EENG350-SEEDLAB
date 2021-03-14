@@ -9,7 +9,7 @@
 #include <Encoder.h>
 
 // constants
-#define SAMPLE_TIME     20    // sampling time in milliseconds
+#define SAMPLE_TIME     40    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
@@ -31,10 +31,12 @@
 
 double KV_L = 0.4;
 double KV_R = 0.4;
-double KI_L = 11.5;
-double KI_R = 12;
-double KP_L = 1;
-double KP_R = 1;
+double KD_L = 0;
+double KD_R = 0;
+double KI_L = 16.5;
+double KI_R = 17;
+double KP_L = 0;
+double KP_R = 0;
 double desSpeed_L = 0;
 double desSpeed_R = 0;
 double errPos_L = 0;
@@ -97,7 +99,7 @@ void loop() {
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = .3048;     
+      desPos = 1.0 * .3048;     
     }
     
     // takes sample of angular velocity
@@ -116,13 +118,13 @@ void loop() {
     errPos_R = desPos - actPos_R;
     errPos_L = desPos - actPos_L;
 
-    desSpeed_R = errPos_R* KV_R;
-    desSpeed_L = errPos_L* KV_L;
+    desSpeed_R = (errPos_R* KV_R) + (actSpeed_R * KD_R);
+    desSpeed_L = (errPos_L* KV_L) + (actSpeed_L * KD_L);
 
-    if (desSpeed_R > SPEED_SATURATION) desSpeed_R = SPEED_SATURADTION;
-    else if (desSpeed_R < -SPEED_SATURATION) desSpeed_R = -SPEED_SATURADTION;
-    if (desSpeed_L > SPEED_SATURATION) desSpeed_L = SPEED_SATURADTION;
-    else if (desSpeed_L < -SPEED_SATURATION) desSpeed_L = -SPEED_SATURADTION;
+    if (desSpeed_R > SPEED_SATURATION) desSpeed_R = SPEED_SATURATION;
+    else if (desSpeed_R < -SPEED_SATURATION) desSpeed_R = -SPEED_SATURATION;
+    if (desSpeed_L > SPEED_SATURATION) desSpeed_L = SPEED_SATURATION;
+    else if (desSpeed_L < -SPEED_SATURATION) desSpeed_L = -SPEED_SATURATION;
 
     errSpeed_R = desSpeed_R - actSpeed_R;
     errSpeed_L = desSpeed_L - actSpeed_L;
@@ -131,7 +133,7 @@ void loop() {
     errSum_L = ((errSpeed_L * SAMPLE_TIME) / 1000) + errSum_L;
   
     voltage_R = (errSum_R * KI_R) + (errSpeed_R * KP_R);
-    voltage_L = (errSum_L * KI_L) + (errSpeed_L * KP_I);
+    voltage_L = (errSum_L * KI_L) + (errSpeed_L * KP_L);
 
     if(voltage_R > MAX_VOLTAGE)voltage_R = MAX_VOLTAGE;
     else if(voltage_R < (-1*MAX_VOLTAGE))voltage_R = (-1 *MAX_VOLTAGE);
@@ -147,18 +149,10 @@ void loop() {
     
     // displays samples
     Serial.print((double)currentTime / 1000); // sample time in seconds
-    Serial.print("\t");
-    Serial.print(actPos_R, 4);
-    Serial.print("\t");
+    Serial.print("\t\tL: ");
     Serial.print(actPos_L, 4);
-    Serial.print("\t");
-    Serial.print(actSpeed_R, 4);
-    Serial.print("\t");
-    Serial.print(actSpeed_L, 4);
-    Serial.print("\t");
-    Serial.print(errSum_R, 4);
-    Serial.print("\t");
-    Serial.print(errSum_L, 4);
+    Serial.print("\t\tR: ");
+    Serial.print(actPos_R, 4);
     Serial.print("\n\r");
     
     // reassigns old degree variables
