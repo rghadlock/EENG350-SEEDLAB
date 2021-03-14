@@ -141,7 +141,7 @@ void loop() {
 
     // determines desired angular speeds
     desAngSpeed_R = Kv_R * errorAng_R;
-    desAngSpeed_L = Kv_L * errorAng_R;
+    desAngSpeed_L = Kv_L * errorAng_L;
 
     // calculates error and sum of error for angular speeds
     errorAngSpeed_R = desAngSpeed_R - actAngSpeed_R;
