@@ -15,6 +15,7 @@
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define RAD_IN_DEG      0.01745329  // used for converting degrees to radians.
 #define START_DELAY     3000  // start delay in millisconds
+#define SPEED_SATURATION 0.5
 
 // pins
 #define CHANNEL_RA      2     // encoder input pin for right motor channel A
@@ -32,6 +33,8 @@ double KV_L = 0.4;
 double KV_R = 0.4;
 double KI_L = 11.5;
 double KI_R = 12;
+double KP_L = 1;
+double KP_R = 1;
 double desSpeed_L = 0;
 double desSpeed_R = 0;
 double errPos_L = 0;
@@ -87,8 +90,6 @@ void loop() {
     static double oldDeg_L = 0;
     static double angVel_R = 0;
     static double angVel_L = 0;
-
-
  
     
     // measures time for delay
@@ -96,7 +97,7 @@ void loop() {
 
     // starts motor after appropriate time delay
     if (millis() >= START_DELAY) {
-      desPos = 1;     
+      desPos = .3048;     
     }
     
     // takes sample of angular velocity
@@ -118,14 +119,19 @@ void loop() {
     desSpeed_R = errPos_R* KV_R;
     desSpeed_L = errPos_L* KV_L;
 
+    if (desSpeed_R > SPEED_SATURATION) desSpeed_R = SPEED_SATURADTION;
+    else if (desSpeed_R < -SPEED_SATURATION) desSpeed_R = -SPEED_SATURADTION;
+    if (desSpeed_L > SPEED_SATURATION) desSpeed_L = SPEED_SATURADTION;
+    else if (desSpeed_L < -SPEED_SATURATION) desSpeed_L = -SPEED_SATURADTION;
+
     errSpeed_R = desSpeed_R - actSpeed_R;
     errSpeed_L = desSpeed_L - actSpeed_L;
 
     errSum_R = ((errSpeed_R * SAMPLE_TIME) / 1000) + errSum_R;
     errSum_L = ((errSpeed_L * SAMPLE_TIME) / 1000) + errSum_L;
   
-    voltage_R = errSum_R * KI_R;
-    voltage_L = errSum_L * KI_L;
+    voltage_R = (errSum_R * KI_R) + (errSpeed_R * KP_R);
+    voltage_L = (errSum_L * KI_L) + (errSpeed_L * KP_I);
 
     if(voltage_R > MAX_VOLTAGE)voltage_R = MAX_VOLTAGE;
     else if(voltage_R < (-1*MAX_VOLTAGE))voltage_R = (-1 *MAX_VOLTAGE);
