@@ -9,7 +9,7 @@
 #include <Encoder.h>
 
 // constants
-#define SAMPLE_TIME     20    // sampling time in milliseconds
+#define SAMPLE_TIME     40    // sampling time in milliseconds
 #define STEP_VOLTAGE    5     // step voltage into the motor
 #define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
@@ -32,7 +32,9 @@
 
 // global variables
 double Ki_L = 0.03;
-double Ki_R = 0.022;
+double Ki_R = 0.03;
+double Kp_L = 0.001;
+double Kp_R = 0.001;
 double actRot = 0;
 double actAng_L = 0;
 double actAng_R = 0;
@@ -87,7 +89,7 @@ void loop() {
 
     // starts motor after appropriate time delay
     if ((millis() >= START_DELAY) && !startFlag) {
-      desAngSpeed_L = 250;   
+      desAngSpeed_L = -250;   
       desAngSpeed_R = 250;   
       startFlag = 1;
     }
@@ -108,10 +110,10 @@ void loop() {
     errorAngSpeedSum_L = ((errorAngSpeed_L * SAMPLE_TIME) / 1000) + errorAngSpeedSum_L;
 
      // determines voltage of motors and prevents overflow
-    voltage_R = errorAngSpeedSum_R * Ki_R;
+    voltage_R = (errorAngSpeedSum_R * Ki_R) + (errorAngSpeed_R * Kp_R);
     if(voltage_R > MAX_VOLTAGE) voltage_R = MAX_VOLTAGE;
     else if(voltage_R < (-1*MAX_VOLTAGE)) voltage_R = (-1 *MAX_VOLTAGE);
-    voltage_L = errorAngSpeedSum_L * Ki_L;
+    voltage_L = (errorAngSpeedSum_L * Ki_L) + (errorAngSpeed_L * Kp_L);
     if(voltage_L > MAX_VOLTAGE) voltage_L = MAX_VOLTAGE;
     else if(voltage_L < (-1*MAX_VOLTAGE)) voltage_L = (-1 *MAX_VOLTAGE);
 
@@ -142,6 +144,5 @@ void loop() {
     
     // creates delay of SAMPLE_TIME ms
     while(millis() < (currentTime + SAMPLE_TIME));
-    
 
 }
