@@ -67,6 +67,8 @@ void resetRotation () {
   desAng_R = 0;
   actAng_L = 0;
   actAng_R = 0;
+  rightEnc.write(0);
+  leftEnc.write(0);
   errorAng_L = 0;
   errorAng_R = 0;
   desAngSpeed_L = 0;
