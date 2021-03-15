@@ -14,7 +14,7 @@
 
 // system constants
 #define SAMPLE_TIME     40    // sampling time in milliseconds
-#define MAX_VOLTAGE     7.5   // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     8.0   // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define WHEEL_DISTANCE  0.290    // distance between wheels in meters
 #define START_DELAY     3000  // start delay in millisconds
@@ -118,9 +118,13 @@ void loop() {
   if (rightVoltage > MAX_VOLTAGE) rightVoltage = MAX_VOLTAGE;
   else if (rightVoltage < -MAX_VOLTAGE) rightVoltage = -MAX_VOLTAGE;
 
-  // writes voltages
-  analogWrite(SPEED_L, ((leftVoltage * 255) / MAX_VOLTAGE));   
-  analogWrite(SPEED_R, ((rightVoltage * 255) / MAX_VOLTAGE)); 
+  // determines direction of each motorr and then writes to the motor
+  if(rightVoltage < 0) digitalWrite(DIRECTION_R, HIGH);
+  else digitalWrite(DIRECTION_R, LOW);
+  if(leftVoltage < 0) digitalWrite(DIRECTION_L, HIGH);
+  else digitalWrite(DIRECTION_L, LOW); 
+  analogWrite(SPEED_R, abs(rightVoltage*255/ MAX_VOLTAGE));
+  analogWrite(SPEED_L, abs(leftVoltage*255/ MAX_VOLTAGE));
     
   // displays samples
   Serial.print((double)currentTime / 1000); // sample time in seconds
