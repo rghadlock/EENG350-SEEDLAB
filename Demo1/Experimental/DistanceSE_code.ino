@@ -33,7 +33,10 @@
 
 // sets encoder functions
 Encoder rightEnc(CHANNEL_RA, CHANNEL_RB);
-Encoder leftEnc(CHANNEL_LB, CHANNEL_LA);    // channels A and B have been switched. This is different from most other code.
+Encoder leftEnc(CHANNEL_LA, CHANNEL_LB); 
+
+// global variables
+double speed_dis = 0;
 
 void setup() {
 
@@ -71,8 +74,6 @@ void loop() {
   static double oldDeg_L = 0;
   static double angVel_R = 0;
   static double angVel_L = 0;
-  static double velocity_R = 0; // velocity in meters per second
-  static double velocity_L = 0; // velocity in meters per second
 
   // measures time for delay
   currentTime = millis();
@@ -85,20 +86,19 @@ void loop() {
 
   // takes sample of angular velocity
   newDeg_R = ((double)rightEnc.read() * 360) / 3200;
-  newDeg_L = ((double)leftEnc.read() * 360) / 3200;
+  newDeg_L = -((double)leftEnc.read() * 360) / 3200;
 
   // calculates angular velocity and straightforward velocity
   angVel_R = (1000 * (newDeg_R - oldDeg_R)) / SAMPLE_TIME;
   angVel_L = (1000 * (newDeg_L - oldDeg_L)) / SAMPLE_TIME;
-  velocity_R = WHEEL_RADIUS * angVel_R * RAD_IN_DEG;
-  velocity_L = -WHEEL_RADIUS * angVel_L * RAD_IN_DEG;
+
+  // calculates speed of system
+  speed_dis = WHEEL_RADIUS * 0.5 * (angVel_R + angVel_L) * RAD_IN_DEG;
     
   // displays samples
   Serial.print((double)currentTime / 1000); // sample time in seconds
   Serial.print("\t");
-  Serial.print(velocity_L, 2);
-  Serial.print("\t");
-  Serial.print(velocity_R, 2);
+  Serial.print(speed_dis, 2);
   Serial.print("\n\r");
   
   // reassigns old degree variables
