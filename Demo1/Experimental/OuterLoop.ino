@@ -14,7 +14,7 @@
 #include <Encoder.h>
 
 // system constants
-#define SAMPLE_TIME     40       // sampling time in milliseconds
+#define SAMPLE_TIME     40.0     // sampling time in milliseconds
 #define MAX_VOLTAGE     7.9      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define WHEEL_DISTANCE  0.290    // distance between wheels in meters
@@ -47,8 +47,8 @@
 // outer-loop controller gains and variables    
 #define KDO_DIS         0.24
 #define KPO_DIS         1.0 
-#define KDO_ROT         0//1.25
-#define KPO_ROT         0.9//3.60 
+#define KDO_ROT         1.25
+#define KPO_ROT         3.60 
 #define SPEED_SAT_DIS   0.5
 #define SPEED_SAT_ROT   45
 
@@ -71,6 +71,10 @@ double errorSpeed_dis = 0;
 double errorSpeed_rot = 0;
 double errorSpeedSum_dis = 0;
 double errorSpeedSum_rot = 0;
+double errorPosOld_dis = 0;
+double errorPosOld_rot = 0;
+double errorPosChange_dis = 0;
+double errorPosChange_rot = 0;
 
 // global flags
 bool start_f = 0;
@@ -150,24 +154,28 @@ void loop() {
 
   // outer loop control system for distance
   errorPos_dis = desPos_dis - actPos_dis;
-  desSpeed_dis = (errorPos_dis * KPO_DIS) + (errorSpeed_dis * KDO_DIS);
+  errorPosChange_dis = ((errorPos_dis - errorPosOld_dis) * 1000.0) / SAMPLE_TIME;
+  errorPosOld_dis = errorPos_dis;
+  desSpeed_dis = (errorPos_dis * KPO_DIS) + (errorPosChange_dis * KDO_DIS);
   if (desSpeed_dis > SPEED_SAT_DIS) desSpeed_dis = SPEED_SAT_DIS;
   else if (desSpeed_dis < -SPEED_SAT_DIS) desSpeed_dis = -SPEED_SAT_DIS;
 
   // outer loop control system for rotation
   errorPos_rot = desPos_rot - actPos_rot;
-  desSpeed_rot = (errorPos_rot * KPO_ROT) + (errorSpeed_rot * KDO_ROT);
+  errorPosChange_rot = ((errorPos_rot - errorPosOld_rot) * 1000.0) / SAMPLE_TIME;
+  errorPosOld_rot = errorPos_dis;
+  desSpeed_rot = (errorPos_rot * KPO_ROT) + (errorPosChange_rot * KDO_ROT);
   if (desSpeed_rot > SPEED_SAT_ROT) desSpeed_rot = SPEED_SAT_ROT;
   else if (desSpeed_rot < -SPEED_SAT_ROT) desSpeed_rot = -SPEED_SAT_ROT;
   
   // control system for sum voltage
   errorSpeed_dis = desSpeed_dis - actSpeed_dis;
-  errorSpeedSum_dis += (errorSpeed_dis * SAMPLE_TIME) / 1000;
+  errorSpeedSum_dis += (errorSpeed_dis * SAMPLE_TIME) / 1000.0;
   sumVoltage = (errorSpeedSum_dis * KI_DIS) + (errorSpeed_dis * KP_DIS);
   
   // control system for dif voltage
   errorSpeed_rot = desSpeed_rot - actSpeed_rot;
-  errorSpeedSum_rot += (errorSpeed_rot * SAMPLE_TIME) / 1000;
+  errorSpeedSum_rot += (errorSpeed_rot * SAMPLE_TIME) / 1000.0;
   difVoltage = (errorSpeedSum_rot * KI_ROT) + (errorSpeed_rot * KP_ROT);
   
   // determines voltages
@@ -196,6 +204,10 @@ void loop() {
   Serial.print(actPos_dis, 4);
   Serial.print("\t");
   Serial.print(actPos_rot, 2);
+  Serial.print("\t\t");
+  Serial.print(errorSpeed_rot, 2);
+  Serial.print("\t");
+  Serial.print(errorPosChange_rot, 2);
   Serial.print("\n\r");
   
   // reassigns old degree variables
