@@ -1,4 +1,4 @@
-/* DistanceSE_code.ino
+/* StepExperiment.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
  * robot speed for each wheel.
@@ -6,7 +6,8 @@
  */
 
  // important parameters
-#define STEP_VOLTAGE           10
+#define STEP_VOLTAGE_DIS           0
+#define STEP_VOLTAGE_ROT           10
 
 // libraries
 #include <Encoder.h>
@@ -89,8 +90,8 @@ void loop() {
 
   // starts motor after appropriate time delay
   if (millis() >= START_DELAY) {
-    sumVoltage = STEP_VOLTAGE;
-    difVoltage = 0;    
+    sumVoltage = STEP_VOLTAGE_DIS;
+    difVoltage = STEP_VOLTAGE_ROT;    
   }
 
   // takes sample of position
