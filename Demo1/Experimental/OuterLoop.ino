@@ -6,7 +6,7 @@
  */
 
 // important parameters (note: distance is in feet)
-#define DISTANCE          1
+#define DISTANCE          3
 #define ROTATION          0
 #define ROTATE_FIRST      false
 
@@ -15,7 +15,7 @@
 
 // system constants
 #define SAMPLE_TIME     40       // sampling time in milliseconds
-#define MAX_VOLTAGE     7.5      // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     7.9      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define WHEEL_DISTANCE  0.290    // distance between wheels in meters
 
@@ -46,11 +46,11 @@
 
 // outer-loop controller gains and variables    
 #define KDO_DIS         0.24
-#define KPO_DIS         1 
-#define KDO_ROT         1.25
-#define KPO_ROT         3.60 
+#define KPO_DIS         1.0 
+#define KDO_ROT         0//1.25
+#define KPO_ROT         0.9//3.60 
 #define SPEED_SAT_DIS   0.5
-#define SPEED_SAT_ROT   180
+#define SPEED_SAT_ROT   45
 
 // sets encoder variables
 Encoder rightEnc(CHANNEL_RA, CHANNEL_RB);
@@ -121,8 +121,8 @@ void loop() {
 
   // starts motor after appropriate time delay
   if ((millis() >= START_DELAY) && (!start_f)) {
-    desPos_dis = DISTANCE;
-    desPos_rot = 0;    
+    desPos_dis = DISTANCE * METERS_IN_FEET;
+    desPos_rot = ROTATION;    
     start_f = 1;
   }
 
@@ -192,8 +192,8 @@ void loop() {
   Serial.print(actSpeed_dis, 2);
   Serial.print("\t");
   Serial.print(actSpeed_rot, 2);
-  Serial.print("\t");
-  Serial.print(actPos_dis, 2);
+  Serial.print("\t\t");
+  Serial.print(actPos_dis, 4);
   Serial.print("\t");
   Serial.print(actPos_rot, 2);
   Serial.print("\n\r");
