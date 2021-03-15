@@ -15,7 +15,7 @@
 
 // system constants
 #define SAMPLE_TIME     40.0     // sampling time in milliseconds
-#define MAX_VOLTAGE     7.9      // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     8.0      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define WHEEL_DISTANCE  0.290    // distance between wheels in meters
 
