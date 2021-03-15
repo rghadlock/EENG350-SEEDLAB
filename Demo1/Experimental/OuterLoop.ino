@@ -6,22 +6,22 @@
  */
 
 // important parameters (note: distance is in feet)
-#define DISTANCE          3
-#define ROTATION          0
+#define DISTANCE          0
+#define ROTATION          180
 #define ROTATE_FIRST      false
 
 // libraries
 #include <Encoder.h>
 
 // system constants
-#define SAMPLE_TIME     40.0     // sampling time in milliseconds
+#define SAMPLE_TIME     30.0     // sampling time in milliseconds
 #define MAX_VOLTAGE     8.0      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.0745   // radius of wheel in meters
 #define WHEEL_DISTANCE  0.290    // distance between wheels in meters
 
 // delay times in milliseconds
-#define START_DELAY     3000 
-#define END_DELAY       18000
+#define START_DELAY     1500 
+#define END_DELAY       16500
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
@@ -47,8 +47,8 @@
 // outer-loop controller gains and variables    
 #define KDO_DIS         0.24
 #define KPO_DIS         1.0 
-#define KDO_ROT         1.25
-#define KPO_ROT         3.60 
+#define KDO_ROT         0.0//1.5
+#define KPO_ROT         20.0//3.60 
 #define SPEED_SAT_DIS   0.5
 #define SPEED_SAT_ROT   45
 
@@ -204,10 +204,6 @@ void loop() {
   Serial.print(actPos_dis, 4);
   Serial.print("\t");
   Serial.print(actPos_rot, 2);
-  Serial.print("\t\t");
-  Serial.print(errorSpeed_rot, 2);
-  Serial.print("\t");
-  Serial.print(errorPosChange_rot, 2);
   Serial.print("\n\r");
   
   // reassigns old degree variables
