@@ -1,4 +1,4 @@
-/* OuterLoop.ino
+/* TurnThenDrive.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
  * robot speed for each wheel.
@@ -7,22 +7,21 @@
 
 // important parameters (note: distance is in feet)
 #define DISTANCE          1
-#define ROTATION          90
-#define ROTATE_FIRST      false
+#define ROTATION          -180
 
 // libraries
 #include <Encoder.h>
 
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
-#define MAX_VOLTAGE     8.0      // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     8.1      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.290    // distance between wheels in meters
+#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters
 
 // delay times in milliseconds
 #define START_DELAY     1500 
 #define ROTATE_DELAY    16500
-#define DRIVE_DELAY     31500
+#define DRIVE_DELAY     24000
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
@@ -48,10 +47,10 @@
 // outer-loop controller gains and variables    
 #define KDO_DIS_1           0.24
 #define KPO_DIS_1           1.0 
-#define KDO_ROT_1           0.0
+#define KDO_ROT_1           0.1
 #define KPO_ROT_1           4.0
 #define SPEED_SAT_DIS_1     0.5
-#define SPEED_SAT_ROT_1     180
+#define SPEED_SAT_ROT_1     45
 #define KDO_DIS_2           0.24
 #define KPO_DIS_2           1.0 
 #define KDO_ROT_2           0.0
@@ -154,6 +153,8 @@ void loop() {
 
   // drives system after appropriate time delay
   if ((millis() >= ROTATE_DELAY) && (start_f) && (!rotate_f)) {
+    errorSpeedSum_dis = 0;
+    errorSpeedSum_rot = 0;
     KDO_DIS = KDO_DIS_2;
     KPO_DIS = KPO_DIS_2;
     KDO_ROT = KDO_ROT_2;
