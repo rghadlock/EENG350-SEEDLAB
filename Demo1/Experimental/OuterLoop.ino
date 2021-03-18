@@ -6,8 +6,8 @@
  */
 
 // important parameters (note: distance is in feet)
-#define DISTANCE          3
-#define ROTATION          0
+#define DISTANCE          0
+#define ROTATION          -180
 #define ROTATE_FIRST      false
 
 // libraries
@@ -15,9 +15,10 @@
 
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
-#define MAX_VOLTAGE     7.6      // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     8.2      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.290    // distance between wheels in meters
+
+#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters
 
 // delay times in milliseconds
 #define START_DELAY     1500 
@@ -41,16 +42,16 @@
 // innner-loop controller gains
 #define KI_DIS          30   
 #define KP_DIS          0     
-#define KI_ROT          0.20//0.15 
+#define KI_ROT          0.20 
 #define KP_ROT          0    
 
 // outer-loop controller gains and variables    
 #define KDO_DIS         0.24
 #define KPO_DIS         1.0 
-#define KDO_ROT         0.0//1.5
-#define KPO_ROT         3.0//20.0//3.60 
+#define KDO_ROT         0.1//0.0//1.5
+#define KPO_ROT         4//3.0//20.0//3.60 
 #define SPEED_SAT_DIS   0.5
-#define SPEED_SAT_ROT   180
+#define SPEED_SAT_ROT   45
 
 // sets encoder variables
 Encoder rightEnc(CHANNEL_RA, CHANNEL_RB);
@@ -205,7 +206,7 @@ void loop() {
   Serial.print("\t");
   Serial.print(actPos_rot, 2);
   Serial.print("\n\r");
-  
+
   // reassigns old degree variables
   oldDeg_R = newDeg_R;
   oldDeg_L = newDeg_L;
