@@ -1,4 +1,4 @@
-/* TurnThenDrive.ino
+/* OuterLoop.ino
  * 
  * Purpose : This code is used to determine the transfer function for voltage to 
  * robot speed for each wheel.
@@ -7,16 +7,16 @@
 
 // important parameters (note: distance is in feet)
 #define DISTANCE          1
-#define ROTATION          -180
+#define ROTATION          -90
 
 // libraries
 #include <Encoder.h>
 
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
-#define MAX_VOLTAGE     8.1      // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     8.0      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters
+#define WHEEL_DISTANCE  0.284    // distance between wheels in meters
 
 // delay times in milliseconds
 #define START_DELAY     1500 
