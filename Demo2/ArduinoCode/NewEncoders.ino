@@ -5,12 +5,12 @@
  */
 
 // important parameters (note: distance is in feet)
-#define STEP_SUM_VOLTAGE  10
+#define STEP_SUM_VOLTAGE  0
 #define STEP_DIF_VOLTAGE  0
 
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
-#define MAX_VOLTAGE     8.2      // maximum voltage of the input into the motor
+#define MAX_VOLTAGE     8.1      // maximum voltage of the input into the motor
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
 #define WHEEL_DISTANCE  0.29750    // distance between wheels in meters
 
@@ -38,14 +38,14 @@ double actPos_dis = 0;
 double actPos_rot = 0;
 double actSpeed_dis = 0;
 double actSpeed_rot = 0;
-int counter_R = 0;
-int counter_L = 0;
+long counter_R = 0;
+long counter_L = 0;
 unsigned long lastTime_R = 0; 
 unsigned long newTime_R = 0; 
-int timeDiff_R = 0;
+unsigned long timeDiff_R = 0;
 unsigned long lastTime_L = 0; 
 unsigned long newTime_L = 0; 
-int timeDiff_L = 0;
+unsigned long timeDiff_L = 0;
 double newDeg_R = 0;
 double newDeg_L = 0;
 double oldDeg_R = 0;
@@ -60,13 +60,13 @@ bool end_f = 0;
 void rightISR(void){//ISR thats triggered when right Pin A changes
   
   if(digitalRead(CHANNEL_RA) != digitalRead(CHANNEL_RB)){//if A and B are different after A changes its moving clockwise
-    counter_R++;//cw
+    counter_R--;//cw
   }
   else{
-    counter_R--;//ccw
+    counter_R++;//ccw
   }
   newTime_R = micros();
-  newDeg_R = (counter_R * 360) / 3200;
+  newDeg_R = ((double)counter_R * 360) / 3200;       // changed from 3200
   timeDiff_R = newTime_R - lastTime_R;
   angVel_R = (1000000 * (newDeg_R - oldDeg_R)) / timeDiff_R;
   actPos_dis = WHEEL_RADIUS * 0.5 * (newDeg_R + newDeg_L) * RAD_IN_DEG;
@@ -84,7 +84,7 @@ void leftISR(void){//ISR thats triggered when left Pin A changes
     counter_L--;//ccw
   }
   newTime_L = micros();
-  newDeg_L = (counter_L * 360) / 3200;
+  newDeg_L = ((double)counter_L * 360) / 1600;       // changed from 3200
   timeDiff_L = newTime_L - lastTime_L;
   angVel_L = (1000000 * (newDeg_L - oldDeg_L)) / timeDiff_L;
   actPos_dis = WHEEL_RADIUS * 0.5 * (newDeg_R + newDeg_L) * RAD_IN_DEG;
@@ -175,6 +175,8 @@ void loop() {
   Serial.print(actPos_dis / METERS_IN_FEET, 4);
   Serial.print("\t");
   Serial.print(actPos_rot, 2);
+  Serial.print("\t");
+  Serial.print(counter_R);
   Serial.print("\n\r");
   
   // ensures function isn't taking too long
@@ -183,4 +185,5 @@ void loop() {
   // creates delay of SAMPLE_TIME ms
   while(millis() < (currentTime + SAMPLE_TIME));
   
+} // end of loop 
 } // end of loop 
