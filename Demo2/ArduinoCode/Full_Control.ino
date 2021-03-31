@@ -9,8 +9,8 @@
 #define MAX_VOLTAGE       8.2       // maximum voltage of the input into the motor
 #define CIRCLE_RADIUS     0.4       // radius of circle robot will drive
 #define CIRCLE_TIME       4.0       // time for robot to drive circle
-#define CIRCLE_THRESH_DIS 0.1      // threshhold to stop circle movement
-#define CIRCLE_THRESH_ROT 2.00      // threshhold to stop circle movement
+#define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
+#define CIRCLE_THRESH_ROT 1.00      // threshhold to stop circle movement
 #define CIRCLE            2.5233    // circle circumfrence
 
 // libraries
@@ -19,18 +19,25 @@
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-//#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters (better value)
-#define WHEEL_DISTANCE  0.28    // distance between wheels in meters (value Nolan used at home)
+#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
 #define METERS_IN_FEET  0.3048 
 
-// inner-loops controller gains and constants
-#define KP_DIS          0.00
-#define KI_DIS          25.0
-#define KP_ROT          0.00
-#define KI_ROT          0.20 
+// inner-loops controller gains
+double KP_DIS = 0.00;
+double KI_DIS = 25.0;
+double KP_ROT = 0.00;
+double KI_ROT = 0.20;
+#define KP_DIS1         0.00
+#define KI_DIS1         25.0
+#define KP_ROT1         0.00
+#define KI_ROT1         0.20 
+#define KP_DIS2         0.00
+#define KI_DIS2         30.0
+#define KP_ROT2         0.00
+#define KI_ROT2         0.12 
 
 // outer-loops controller gains and constants
 #define KPO_DIS         2.00
@@ -139,6 +146,10 @@ void rotate() {
 // circle - drives the robot in a predifined circle
 // no input
 void circle() {
+  KP_DIS = KP_DIS2;
+  KI_DIS = KI_DIS2;
+  KP_ROT = KP_ROT2;
+  KI_ROT = KI_ROT2;
   errorSpeedSum_dis = 0;
   errorSpeedSum_rot = 0;
   control[0] = false;
@@ -153,6 +164,10 @@ void circle() {
 // correct - corrects robot position to past desired distance and rotation
 // no input
 void correct() {
+  KP_DIS = KP_DIS1;
+  KI_DIS = KI_DIS1;
+  KP_ROT = KP_ROT1;
+  KI_ROT = KI_ROT1;
   errorSpeedSum_dis = 0;
   errorSpeedSum_rot = 0;
   control[0] = true;
@@ -283,8 +298,10 @@ void loop() {
 
   // circle control
   if (control[4]) {
-    if (abs(actPos_rot - (desPos_rot + 360.0)) <= CIRCLE_THRESH_ROT){
-      correct();
+    if (abs(actPos_dis - (desPos_dis + CIRCLE)) <= CIRCLE_THRESH_DIS) {
+      if (abs(actPos_rot - (desPos_rot + 360.0)) <= CIRCLE_THRESH_ROT){
+        correct();
+      }
     }
   }
 
