@@ -6,9 +6,12 @@
  */
 
 // important parameters
-#define MAX_VOLTAGE     8.2       // maximum voltage of the input into the motor
-#define CIRCLE_RADIUS   0.4       // radius of circle robot will drive
-#define CIRCLE_TIME     4.0       // time for robot to drive circle
+#define MAX_VOLTAGE       8.2       // maximum voltage of the input into the motor
+#define CIRCLE_RADIUS     0.4       // radius of circle robot will drive
+#define CIRCLE_TIME       4.0       // time for robot to drive circle
+#define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
+#define CIRCLE_THRESH_ROT 1.00      // threshhold to stop circle movement
+#define CIRCLE            2.5233    // circle circumfrence
 
 // libraries
 #include <Encoder.h>
@@ -72,7 +75,7 @@ double errorPosChange_dis = 0;
 double errorPosChange_rot = 0;
 
 // global variabls for system mode
-bool control[4] = {false, false, false, false}; // [distance, rotation, speed, angular speed]
+bool control[5] = {false, false, false, false, false}; // [distance, rotation, speed, angular speed, circle]
 
 
 // search - rotates the robot at a constant rate until interrupted
@@ -85,6 +88,7 @@ void search(long searchSpeed) {
   control[1] = false;
   control[2] = true;
   control[3] = true;
+  control[4] = false;
   desSpeed_rot = ((double)searchSpeed) / 100;
 }
 
@@ -99,6 +103,7 @@ void aim(long aimAng) {
   control[1] = true;
   control[2] = true;
   control[3] = true;
+  control[4] = false;
   desPos_rot = ((double)aimAng) / 100;
 }
 
@@ -111,6 +116,7 @@ void drive (long driveDis) {
   control[1] = true;
   control[2] = true;
   control[3] = true;
+  control[4] = false;
   desPos_dis = actPos_dis + (((double)driveDis) / 1000);
 }
 
@@ -124,6 +130,7 @@ void rotate() {
   control[1] = true;
   control[2] = true;
   control[3] = true;
+  control[4] = false;
   desPos_rot = actPos_rot - 90;
 }
 
@@ -137,6 +144,7 @@ void circle() {
   control[1] = false;
   control[2] = true;
   control[3] = true;
+  control[4] = true;
   desSpeed_dis = 3.14159265 * (((double)CIRCLE_RADIUS) / ((double)CIRCLE_TIME));
   desSpeed_rot = 180.0 / ((double)CIRCLE_TIME);
 }
@@ -150,6 +158,9 @@ void correct() {
   control[1] = true;
   control[2] = true;
   control[3] = true;
+  control[4] = false;
+  desPos_dis += CIRCLE;
+  desPos_rot += 360;
 }
 
 // kill - stops robot from doing anything else
@@ -159,6 +170,7 @@ void kill() {
   control[1] = false;
   control[2] = false;
   control[3] = false;
+  control[4] = false;
   digitalWrite(ENABLE, LOW);
 }
 
@@ -218,7 +230,7 @@ void loop() {
     circle();
     stage1_f = true;
   }
-  if ((millis() >= 12000) && (!stage2_f)) {
+  if ((millis() >= 20000) && (!stage2_f)) {
     kill();
     stage2_f = true;
   }
@@ -266,6 +278,15 @@ void loop() {
     errorSpeed_rot = desSpeed_rot - actSpeed_rot;
     errorSpeedSum_rot += (errorSpeed_rot * SAMPLE_TIME) / 1000.0;
     difVoltage = (errorSpeedSum_rot * KI_ROT) + (errorSpeed_rot * KP_ROT);
+  }
+
+  // circle control
+  if (control[4]) {
+    if (abs(actPos_dis - (desPos_dis + CIRCLE)) <= CIRCLE_THRESH_DIS) {
+      if (abs(actPos_rot - (desPos_rot + 360.0)) <= CIRCLE_THRESH_ROT){
+        correct();
+      }
+    }
   }
 
   // determines individual voltages
