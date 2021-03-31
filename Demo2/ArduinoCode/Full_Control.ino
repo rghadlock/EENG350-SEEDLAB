@@ -7,8 +7,8 @@
 
 // important parameters
 #define MAX_VOLTAGE     8.2       // maximum voltage of the input into the motor
-#define CIRCLE_RADIUS   0.6       // radius of circle robot will drive
-#define CIRCLE_TIME     8.0       // time for robot to drive circle
+#define CIRCLE_RADIUS   0.4       // radius of circle robot will drive
+#define CIRCLE_TIME     4.0       // time for robot to drive circle
 
 // libraries
 #include <Encoder.h>
@@ -135,8 +135,8 @@ void circle() {
   errorSpeedSum_rot = 0;
   control[0] = false;
   control[1] = false;
-  control[2] = false;
-  control[3] = false;
+  control[2] = true;
+  control[3] = true;
   desSpeed_dis = 3.14159265 * (((double)CIRCLE_RADIUS) / ((double)CIRCLE_TIME));
   desSpeed_rot = 180.0 / ((double)CIRCLE_TIME);
 }
@@ -215,28 +215,12 @@ void loop() {
   static bool stage5_f = false;
   static bool stage6_f = false;
   if ((millis() >= 2000) && (!stage1_f)) {
-    search(4500);
+    circle();
     stage1_f = true;
   }
-  if ((millis() >= 5000) && (!stage2_f)) {
-    aim(13500);
-    stage2_f = true;
-  }
-  if ((millis() >= 8000) && (!stage3_f)) {
-    drive(1000);
-    stage3_f = true;
-  }
-  if ((millis() >= 13000) && (!stage4_f)) {
-    rotate();
-    stage4_f;
-  }
-  if ((millis() >= 16000) && (!stage5_f)) {
-    circle();
-    stage5_f;
-  }
-  if ((millis() >= 24000) && (!stage6_f)) {
+  if ((millis() >= 12000) && (!stage2_f)) {
     kill();
-    stage6_f;
+    stage2_f = true;
   }
   // !!!!!!!!! end simulation test area !!!!!
 
