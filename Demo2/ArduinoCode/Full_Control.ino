@@ -244,12 +244,28 @@ void loop() {
   static bool stage5_f = false;
   static bool stage6_f = false;
   if ((millis() >= 2000) && (!stage1_f)) {
-    rotate();
+    search(4500);
     stage1_f = true;
   }
-  if ((millis() >= 20000) && (!stage2_f)) {
-    kill();
+  if ((millis() >= 6000) && (!stage2_f)) {
+    aim(13500);
     stage2_f = true;
+  }
+  if ((millis() >= 8000) && (!stage3_f)) {
+    drive(1500);
+    stage3_f = true;
+  }
+  if ((millis() >= 12000) && (!stage4_f)) {
+    rotate();
+    stage4_f = true;
+  }
+  if ((millis() >= 14000) && (!stage5_f)) {
+    circle();
+    stage5_f = true;
+  }
+  if ((millis() >= 24000) && (!stage6_f)) {
+    kill();
+    stage6_f = true;
   }
   // !!!!!!!!! end simulation test area !!!!!
 
