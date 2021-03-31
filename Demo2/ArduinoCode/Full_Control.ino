@@ -6,7 +6,7 @@
  */
 
 // important parameters
-#define MAX_VOLTAGE       7.9       // maximum voltage of the input into the motor
+#define MAX_VOLTAGE       7.6       // maximum voltage of the input into the motor
 #define CIRCLE_RADIUS     0.4       // radius of circle robot will drive
 #define CIRCLE_TIME       4.0       // time for robot to drive circle
 #define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
