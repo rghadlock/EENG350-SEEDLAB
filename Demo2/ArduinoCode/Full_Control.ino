@@ -6,11 +6,11 @@
  */
 
 // important parameters
-#define MAX_VOLTAGE       8.2       // maximum voltage of the input into the motor
+#define MAX_VOLTAGE       7.9       // maximum voltage of the input into the motor
 #define CIRCLE_RADIUS     0.4       // radius of circle robot will drive
 #define CIRCLE_TIME       4.0       // time for robot to drive circle
 #define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
-#define CIRCLE_THRESH_ROT 1.00      // threshhold to stop circle movement
+#define CIRCLE_THRESH_ROT 2.00      // threshhold to stop circle movement
 #define CIRCLE            2.5233    // circle circumfrence
 
 // libraries
@@ -19,7 +19,8 @@
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters
+//#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters (actual value)
+#define WHEEL_DISTANCE  0.28   // distance between wheels in meters (value used at Nolan's house)
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
@@ -37,7 +38,7 @@ double KI_ROT = 0.20;
 #define KP_DIS2         0.00
 #define KI_DIS2         30.0
 #define KP_ROT2         0.00
-#define KI_ROT2         0.12 
+#define KI_ROT2         0.10
 
 // outer-loops controller gains and constants
 #define KPO_DIS         2.00
@@ -243,7 +244,7 @@ void loop() {
   static bool stage5_f = false;
   static bool stage6_f = false;
   if ((millis() >= 2000) && (!stage1_f)) {
-    circle();
+    rotate();
     stage1_f = true;
   }
   if ((millis() >= 20000) && (!stage2_f)) {
@@ -298,10 +299,8 @@ void loop() {
 
   // circle control
   if (control[4]) {
-    if (abs(actPos_dis - (desPos_dis + CIRCLE)) <= CIRCLE_THRESH_DIS) {
-      if (abs(actPos_rot - (desPos_rot + 360.0)) <= CIRCLE_THRESH_ROT){
-        correct();
-      }
+    if (abs(actPos_rot - (desPos_rot + 360.0)) <= CIRCLE_THRESH_ROT){
+      correct();
     }
   }
 
