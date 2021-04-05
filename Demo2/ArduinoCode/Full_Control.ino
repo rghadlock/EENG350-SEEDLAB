@@ -19,8 +19,8 @@
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-//#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters (actual value)
-#define WHEEL_DISTANCE  0.28   // distance between wheels in meters (value used at Nolan's house)
+#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters (actual value)
+//#define WHEEL_DISTANCE  0.28   // distance between wheels in meters (value used at Nolan's house)
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
