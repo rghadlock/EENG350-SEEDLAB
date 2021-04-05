@@ -6,9 +6,9 @@
  */
 
 // important parameters
-#define MAX_VOLTAGE       7.6       // maximum voltage of the input into the motor
+#define MAX_VOLTAGE       8.1       // maximum voltage of the input into the motor
 #define CIRCLE_RADIUS     0.4       // radius of circle robot will drive
-#define CIRCLE_TIME       4.0       // time for robot to drive circle
+#define CIRCLE_TIME       3.0       // time for robot to drive circle       
 #define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
 #define CIRCLE_THRESH_ROT 2.00      // threshhold to stop circle movement
 #define CIRCLE            2.5233    // circle circumfrence
@@ -19,8 +19,12 @@
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
 #define WHEEL_RADIUS    0.07485   // radius of wheel in meters
-#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters (actual value)
+//#define WHEEL_DISTANCE  0.29750    // distance between wheels in meters (actual value)
 //#define WHEEL_DISTANCE  0.28   // distance between wheels in meters (value used at Nolan's house)
+//#define WHEEL_DISTANCE  0.2875   //testing
+double WHEEL_DISTANCE = 0.2875;
+#define WHEEL_DISTANCE_1  0.2875
+#define WHEEL_DISTANCE_2  0.28
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
@@ -151,6 +155,7 @@ void circle() {
   KI_DIS = KI_DIS2;
   KP_ROT = KP_ROT2;
   KI_ROT = KI_ROT2;
+  WHEEL_DISTANCE = WHEEL_DISTANCE_2;
   errorSpeedSum_dis = 0;
   errorSpeedSum_rot = 0;
   control[0] = false;
@@ -169,6 +174,7 @@ void correct() {
   KI_DIS = KI_DIS1;
   KP_ROT = KP_ROT1;
   KI_ROT = KI_ROT1;
+  WHEEL_DISTANCE = WHEEL_DISTANCE_1;
   errorSpeedSum_dis = 0;
   errorSpeedSum_rot = 0;
   control[0] = true;
@@ -240,30 +246,30 @@ void loop() {
   static bool stage1_f = false;
   static bool stage2_f = false;
   static bool stage3_f = false;
-  static bool stage4_f = false;
-  static bool stage5_f = false;
-  static bool stage6_f = false;
+  static bool stage4_f = true;
+  static bool stage5_f = true;
+  static bool stage6_f = true;
   if ((millis() >= 2000) && (!stage1_f)) {
-    search(4500);
+    rotate();
     stage1_f = true;
   }
   if ((millis() >= 6000) && (!stage2_f)) {
-    aim(13500);
+    circle();
     stage2_f = true;
   }
-  if ((millis() >= 8000) && (!stage3_f)) {
-    drive(1500);
+  if ((millis() >= 15000) && (!stage3_f)) {
+    kill();
     stage3_f = true;
   }
-  if ((millis() >= 12000) && (!stage4_f)) {
+  if ((millis() >= 2000) && (!stage4_f)) {
     rotate();
     stage4_f = true;
   }
-  if ((millis() >= 14000) && (!stage5_f)) {
+  if ((millis() >= 6000) && (!stage5_f)) {
     circle();
     stage5_f = true;
   }
-  if ((millis() >= 24000) && (!stage6_f)) {
+  if ((millis() >= 6000) && (!stage6_f)) {
     kill();
     stage6_f = true;
   }
