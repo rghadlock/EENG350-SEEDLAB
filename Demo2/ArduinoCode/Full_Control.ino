@@ -183,7 +183,7 @@ void correct() {
   control[3] = true;
   control[4] = false;
   desPos_dis += CIRCLE;
-  desPos_rot += 360;
+  desPos_rot += 350;
 }
 
 // kill - stops robot from doing anything else
