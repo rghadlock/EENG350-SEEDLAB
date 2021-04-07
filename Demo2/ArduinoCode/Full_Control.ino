@@ -23,8 +23,8 @@
 //#define WHEEL_DISTANCE  0.28   // distance between wheels in meters (value used at Nolan's house)
 //#define WHEEL_DISTANCE  0.2875   //testing
 double WHEEL_DISTANCE = 0.2875;
-#define WHEEL_DISTANCE_1  0.2875
-#define WHEEL_DISTANCE_2  0.28
+#define WHEEL_DISTANCE_1  0.2875 
+#define WHEEL_DISTANCE_2  0.28 //circle
 
 // conversion constants
 #define RAD_IN_DEG      0.01745329
