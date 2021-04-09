@@ -281,25 +281,26 @@ void loop() {
   // !!!!!!!!! end simulation test area !!!!!
 
 // finite state machine
+//state 0 == state 1 in python
 if (state[0]) {
   search(4500);
   state[0] = false;
 }
-if (state[1]) {
+else if (state[1]) {
   aim(angle); // input is desired angle in degress*100
   state[1] = false;
 }
-if (state[2]) {
-  drive(distance - 3000);
+else if (state[2]) {
+  drive(distance - 300); //distance in mm
   state[2] = false;
   state[3] = true;
 }
-if (state[3] && (abs(errorPos_dis) <= 0.01)) {
+else if (state[3] && (abs(errorPos_dis) <= 0.01)) {
   rotate();
   state[3] = false;
   state[4] = true;
 }
-if (state[4] && (abs(errorPos_rot) <= 1.0)) {
+else if (state[4] && (abs(errorPos_rot) <= 1.0)) {
   circle();
   state[4] = false;
 }
