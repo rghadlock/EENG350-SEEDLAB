@@ -89,6 +89,9 @@ double errorPosChange_rot = 0;
 
 // global variabls for system mode
 bool control[5] = {false, false, false, false, false}; // [distance, rotation, speed, angular speed, circle]
+bool state[5] = {false, false, false, false, false};
+long angle = 0;
+long distance = 0;
 
 
 // search - rotates the robot at a constant rate until interrupted
@@ -117,7 +120,7 @@ void aim(long aimAng) {
   control[2] = true;
   control[3] = true;
   control[4] = false;
-  desPos_rot = ((double)aimAng) / 100;
+  desPos_rot = (((double)aimAng) / 100) + actPos_rot;
 }
 
 // drive - drives the robot a specific distance
@@ -250,15 +253,17 @@ void loop() {
   static bool stage5_f = true;
   static bool stage6_f = true;
   if ((millis() >= 2000) && (!stage1_f)) {
-    rotate();
+    state[0] = true;
     stage1_f = true;
   }
   if ((millis() >= 6000) && (!stage2_f)) {
-    circle();
+    angle = 10;
+    state[1] = true;
     stage2_f = true;
   }
   if ((millis() >= 15000) && (!stage3_f)) {
-    kill();
+    distance = 1000;
+    state[2] = true;
     stage3_f = true;
   }
   if ((millis() >= 2000) && (!stage4_f)) {
@@ -275,6 +280,29 @@ void loop() {
   }
   // !!!!!!!!! end simulation test area !!!!!
 
+// finite state machine
+if (state[0]) {
+  search(4500);
+  state[0] = false;
+}
+if (state[1]) {
+  aim(angle); // input is desired angle in degress*100
+  state[1] = false;
+}
+if (state[2]) {
+  drive(distance - 3000);
+  state[2] = false;
+  state[3] = true;
+}
+if (state[3] && (abs(errorPos_dis) <= 0.01)) {
+  rotate();
+  state[3] = false;
+  state[4] = true;
+}
+if (state[4] && (abs(errorPos_rot) <= 1.0)) {
+  circle();
+  state[4] = false;
+}
   // takes samples of system
   newDeg_R = ((double)rightEnc.read() * 360) / 3200;
   newDeg_L = -((double)leftEnc.read() * 360) / 3200;
