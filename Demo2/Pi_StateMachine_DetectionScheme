@@ -92,26 +92,26 @@ def main():
             output.truncate(0) #clear image for new capture
             
         #Finite State Machine
-            lcd.clear()
-            msg = "Setpoint: %.3f" % (state)#show state on lcd
-            lcd.message = msg
+        lcd.clear()
+        msg = "Setpoint: %.3f" % (state)#show state on lcd
+        lcd.message = msg
             
-            #Search - 1(rotates until it finds marker)
-            if (state == 1):
-                #TODO tell arduino to search
+        #Search - 1(rotates until it finds marker)
+        if (state == 1):
+            #TODO tell arduino to search
                 
-            #Aim - 2 (fine tunes angle)
-            if (state == 2):
-                #TODO tell arduino to stop searching
-                #TODO send angle to arduino
-                if (angle < 2 and angle > -2):
-                    state = 3
+        #Aim - 2 (fine tunes angle)
+        if (state == 2):
+            #TODO tell arduino to stop searching
+            #TODO send angle to arduino
+            if (angle < 2 and angle > -2):
+                state = 3
                     
-            #drive - 3(straight)
-            if (state == 3):
-                #TODO send arduino the distance
-                #TODO tell arduino to stop aim and start drive
-                break #leave infinite loop stop camera (i think this works)
+        #drive - 3(straight)
+        if (state == 3):
+            #TODO send arduino the distance
+            #TODO tell arduino to stop aim and start drive
+            break #leave infinite loop stop camera (i think this works)
                 
                
    except KeyboardInterrupt: #stop loop on Ctrl+C
