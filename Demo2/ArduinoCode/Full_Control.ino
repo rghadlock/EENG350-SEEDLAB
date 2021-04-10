@@ -446,9 +446,9 @@ void receiveData(int byteCount) {
 }
 void sendData(){
  //shift bits to get specific bytes from outPos
-  outVal[0] = outPos >> 8;
-  outVal[1] = outPos & 0x00FF;
-  Serial.println();
+  //outVal[0] = outPos >> 8;
+  //outVal[1] = outPos & 0x00FF;
+  //Serial.println();
   Wire.write(outVal, 2);
   
 }
