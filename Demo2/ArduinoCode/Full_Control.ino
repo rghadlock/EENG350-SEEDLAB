@@ -90,6 +90,9 @@ double errorPosChange_dis = 0;
 double errorPosChange_rot = 0;
 
 int state = 0;
+int finState = 0;
+byte dataRec[7] = {0};
+byte outVal[1] = {0};
 
 // global variabls for system mode
 bool control[5] = {false, false, false, false, false}; // [distance, rotation, speed, angular speed, circle]
@@ -297,8 +300,10 @@ switch(state){
     break;
   case 2:
     aim(angle); // input is desired angle in degress*100
+    finState = 1;
     break;
   case 3:
+    finState = 0;
     drive(distance - 300); //distance in mm
     state = 4;
   case 4:
@@ -446,9 +451,8 @@ void receiveData(int byteCount) {
 }
 void sendData(){
  //shift bits to get specific bytes from outPos
-  //outVal[0] = outPos >> 8;
-  //outVal[1] = outPos & 0x00FF;
+  outval[0] = finState;
   //Serial.println();
-  Wire.write(outVal, 2);
+  Wire.write(outval, 1);
   
 }
