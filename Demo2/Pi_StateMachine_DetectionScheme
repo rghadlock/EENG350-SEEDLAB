@@ -117,7 +117,8 @@ def main():
             cont = readNumber()
             while(cont != 1){
             time.sleep(1)
-            cont = readNumber()
+            recNum = readNumber()
+            cont = int.from_bytes(recNum, byteorder = 'big')
             }
             if (angle < 2 and angle > -2):
                 state = 3
