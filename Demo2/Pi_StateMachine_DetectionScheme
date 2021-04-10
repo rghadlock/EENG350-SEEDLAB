@@ -89,27 +89,43 @@ def main():
                print("No Markers Found. Press Ctrl+C to Exit.")
                if (state == 0 ): #if start
                    state = 1 #go to search
+                   distance = 0;
+                   angle = 0;
             output.truncate(0) #clear image for new capture
             
         #Finite State Machine
         lcd.clear()
         msg = "Setpoint: %.3f" % (state)#show state on lcd
         lcd.message = msg
-            
+        
+        desDistance = int(distance)
+        byteDistance = desDistance.to_bytes(2, byteorder = 'big')
+        desAngle = int(angle*100)
+        byteAngle = desAngle.to_bytes(2, byteorder = 'big')
+        
         #Search - 1(rotates until it finds marker)
         if (state == 1):
             #TODO tell arduino to search
-                
+           sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1])
+           writeNumber(sendBytes)
         #Aim - 2 (fine tunes angle)
         if (state == 2):
             #TODO tell arduino to stop searching
             #TODO send angle to arduino
+            sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1])
+            writeNumber(sendRads)
+            cont = readNumber()
+            while(cont != 1){
+            time.sleep(1)
+            cont = readNumber()
+            }
             if (angle < 2 and angle > -2):
                 state = 3
                     
         #drive - 3(straight)
         if (state == 3):
             #TODO send arduino the distance
+            sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1])
             #TODO tell arduino to stop aim and start drive
             break #leave infinite loop stop camera (i think this works)
                 
