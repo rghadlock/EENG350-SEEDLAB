@@ -23,7 +23,7 @@ lcd.color = [0,0,100]
 time.sleep(1)
 bus = smbus.SMBus(1)
 address = 4
-size = 2
+size = 1
 
 #writes I2C value
 def writeNumber(value):
