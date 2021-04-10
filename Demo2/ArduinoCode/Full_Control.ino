@@ -12,9 +12,11 @@
 #define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
 #define CIRCLE_THRESH_ROT 2.00      // threshhold to stop circle movement
 #define CIRCLE            2.5233    // circle circumfrence
+#define SLAVE_ADDRESS   0x04
 
 // libraries
 #include <Encoder.h>
+#include <Wire.h>
 
 // system constants
 #define SAMPLE_TIME     30.0     // sampling time in milliseconds
@@ -87,9 +89,11 @@ double errorPosOld_rot = 0;
 double errorPosChange_dis = 0;
 double errorPosChange_rot = 0;
 
+int state = 0;
+
 // global variabls for system mode
 bool control[5] = {false, false, false, false, false}; // [distance, rotation, speed, angular speed, circle]
-bool state[5] = {false, false, false, false, false};
+//bool state[5] = {false, false, false, false, false};
 long angle = 0;
 long distance = 0;
 
@@ -205,7 +209,12 @@ void setup() {
 
   // serial communication initialization
   Serial.begin(115200);
-
+  
+  //initialize i2c as slave
+  Wire.begin(SLAVE_ADDRESS);
+  Wire.onReceive(receiveData);
+  Wire.onRequest(sendData);
+  
   // assigns pins as either inputs or outputs
   pinMode(CHANNEL_RA, INPUT);
   pinMode(CHANNEL_LA, INPUT);
@@ -282,6 +291,30 @@ void loop() {
 
 // finite state machine
 //state 0 == state 1 in python
+switch(state){
+  case 1:
+    search(4500);
+    break;
+  case 2:
+    aim(angle); // input is desired angle in degress*100
+    break;
+  case 3:
+    drive(distance - 300); //distance in mm
+    state = 4;
+  case 4:
+    if(abs(errorPos_dis) <= 0.01){
+      rotate();
+      state = 5;
+    }
+    else{break;}
+  case 5:
+    if(abs(errorPos_rot) <= 1.0){
+      circle();
+      state = 0;
+    }
+    else{break;}
+}
+ /*
 if (state[0]) {
   search(4500);
   state[0] = false;
@@ -304,6 +337,7 @@ else if (state[4] && (abs(errorPos_rot) <= 1.0)) {
   circle();
   state[4] = false;
 }
+*/
   // takes samples of system
   newDeg_R = ((double)rightEnc.read() * 360) / 3200;
   newDeg_L = -((double)leftEnc.read() * 360) / 3200;
@@ -394,3 +428,27 @@ else if (state[4] && (abs(errorPos_rot) <= 1.0)) {
   while(millis() < (currentTime + SAMPLE_TIME));
   
 } // end of loop
+
+
+
+//i2c communication functions
+void receiveData(int byteCount) {
+  int k = 0;
+  while (Wire.available()) {
+    dataRec[k] = Wire.read();
+   
+    k++;
+  }
+  state = dataRec[1];
+  distance = (dataRec[2] << 8 | dataRec[3]);
+  angle = (dataRec[4] << 8 | dataRec[5]);
+  
+}
+void sendData(){
+ //shift bits to get specific bytes from outPos
+  outVal[0] = outPos >> 8;
+  outVal[1] = outPos & 0x00FF;
+  Serial.println();
+  Wire.write(outVal, 2);
+  
+}
