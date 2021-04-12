@@ -105,8 +105,8 @@ long distance = 0;
 // input is in (deg/s)*100
 // Ex: input of 36000 means 360 deg/sec)
 void search(long searchSpeed) {
-  errorSpeedSum_dis = 0;
-  errorSpeedSum_rot = 0;
+  //errorSpeedSum_dis = 0;
+  //errorSpeedSum_rot = 0;
   control[0] = true;
   control[1] = false;
   control[2] = true;
@@ -120,8 +120,8 @@ void search(long searchSpeed) {
 // input is in deg*100
 // Ex: input of 10 means 0.1 degrees
 void aim(long aimAng) {
-  errorSpeedSum_dis = 0;
-  errorSpeedSum_rot = 0;
+  //errorSpeedSum_dis = 0;
+  //errorSpeedSum_rot = 0;
   control[0] = true;
   control[1] = true;
   control[2] = true;
@@ -258,38 +258,38 @@ void loop() {
   currentTime = millis();
 
   // !!!!!!!!! simulation test area !!!!!!!!!
-  static bool stage1_f = false;
-  static bool stage2_f = false;
-  static bool stage3_f = false;
-  static bool stage4_f = true;
-  static bool stage5_f = true;
-  static bool stage6_f = true;
-  if ((millis() >= 2000) && (!stage1_f)) {
-    state[0] = true;
-    stage1_f = true;
-  }
-  if ((millis() >= 6000) && (!stage2_f)) {
-    angle = 10;
-    state[1] = true;
-    stage2_f = true;
-  }
-  if ((millis() >= 15000) && (!stage3_f)) {
-    distance = 1000;
-    state[2] = true;
-    stage3_f = true;
-  }
-  if ((millis() >= 2000) && (!stage4_f)) {
-    rotate();
-    stage4_f = true;
-  }
-  if ((millis() >= 6000) && (!stage5_f)) {
-    circle();
-    stage5_f = true;
-  }
-  if ((millis() >= 6000) && (!stage6_f)) {
-    kill();
-    stage6_f = true;
-  }
+//   static bool stage1_f = false;
+//   static bool stage2_f = false;
+//   static bool stage3_f = false;
+//   static bool stage4_f = true;
+//   static bool stage5_f = true;
+//   static bool stage6_f = true;
+//   if ((millis() >= 2000) && (!stage1_f)) {
+//     state[0] = true;
+//     stage1_f = true;
+//   }
+//   if ((millis() >= 6000) && (!stage2_f)) {
+//     angle = 10;
+//     state[1] = true;
+//     stage2_f = true;
+//   }
+//   if ((millis() >= 15000) && (!stage3_f)) {
+//     distance = 1000;
+//     state[2] = true;
+//     stage3_f = true;
+//   }
+//   if ((millis() >= 2000) && (!stage4_f)) {
+//     rotate();
+//     stage4_f = true;
+//   }
+//   if ((millis() >= 6000) && (!stage5_f)) {
+//     circle();
+//     stage5_f = true;
+//   }
+//   if ((millis() >= 6000) && (!stage6_f)) {
+//     kill();
+//     stage6_f = true;
+//   }
   // !!!!!!!!! end simulation test area !!!!!
 
 // finite state machine
@@ -300,7 +300,7 @@ switch(state){
     break;
   case 2:
     aim(angle); // input is desired angle in degress*100
-    finState = 1;
+    if (abs(desPos_rot) <= 1) finState = 1;
     break;
   case 3:
     finState = 0;
