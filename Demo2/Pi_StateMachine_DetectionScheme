@@ -23,7 +23,7 @@ lcd.color = [0,0,100]
 time.sleep(1)
 bus = smbus.SMBus(1)
 address = 4
-size = 1
+size = 2
 
 #writes I2C value
 def writeNumber(value):
@@ -53,26 +53,42 @@ def main():
    focalLen  = 1745.95 #pixels (calculated)
    markerHeight = 185 #mm (measured) marker size must be 700. use create marker function
    print("Calibrating Camera...")
-   camera.resolution = (1920, 1080) #resolution of computer monitor
-   camera.iso = 400 #100 or 200 for daylight and 400 or 800 for low light
-   time.sleep(2) #wait for auto gain to settle
-   #after waiting for auto settings fix the values
-   camera.shutter_speed = camera.exposure_speed 
-   camera.exposure_mode = 'off'
-   whiteBalance = camera.awb_gains
-   camera.awb_mode = 'off'
-   camera.awb_gains = whiteBalance
+   camera.resolution = (1920, 1088) #resolution of computer monitor
+   time.sleep(2)
+   camera.exposure_mode = 'sports'
+   camera.awb_mode = 'auto'
+   camera.iso = 800
+   camera.brightness = 100
+   camera.contrast = 100
+   camera.sharpness = 100
+   camera.shutter_speed = 2000 #works best at 2000 i think
+   time.sleep(2) 
    print("Searching for Marker. Press Ctrl+C to exit")
    try:
       while(1):
-         with picamera.array.PiRGBArray(camera) as output:
+        with picamera.array.PiRGBArray(camera) as output:
+            try:
+                if(state == 0 or state == 1):
+                    readAbsAngleArd = readNumber()
+                    absAngle = int.from_bytes(readAbsAngleArd, byteorder = 'big')
+                    
+            except:
+                print('i2c error')
+            #time.sleep(0.1)
             camera.capture(output, 'rgb')
             grayImg = cv2.cvtColor(output.array, cv2.COLOR_BGR2GRAY) #get gray image
             aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250) #set aruco dictionary
             parameters = aruco.DetectorParameters_create() #create parameters for detector
+            
+            #newSize = (960, 540)
+            #newImage = cv2.resize(grayImg, newSize)
+            #cv2.imshow('Image', newImage)
+            #cv2.waitKey(0)
+            
             #run detection on gray image
             corners, ids, rejectedIMGPoints = aruco.detectMarkers(grayImg, aruco_dict, parameters=parameters)
             if ids is not None: #if marker detected
+            
                print('IDs Detected: ', ids)
                pixHeight = abs(corners[0][0][0][1] - corners[0][0][3][1]) #height of marker in pixels
                distance = focalLen * markerHeight / pixHeight #distance calculation only accurate for size 700 markers
@@ -86,7 +102,7 @@ def main():
                if (state == 0 or state ==1): #if start
                    state = 2 #skip to aim
             else:
-               print("No Markers Found. Press Ctrl+C to Exit.")
+               #print("No")
                if (state == 0 ): #if start
                    state = 1 #go to search
                    distance = 0;
@@ -94,39 +110,52 @@ def main():
             output.truncate(0) #clear image for new capture
             
         #Finite State Machine
-        lcd.clear()
-        msg = "Setpoint: %.3f" % (state)#show state on lcd
-        lcd.message = msg
-        
         desDistance = int(distance)
         byteDistance = desDistance.to_bytes(2, byteorder = 'big')
-        desAngle = int(angle*100)
+        #print(absAngle)
+        desAngle = int(absAngle-(angle*100))
         byteAngle = desAngle.to_bytes(2, byteorder = 'big')
-        
+       
         #Search - 1(rotates until it finds marker)
         if (state == 1):
             #TODO tell arduino to search
-           sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1])
-           writeNumber(sendBytes)
+           sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1]]
+           try:
+                writeNumber(sendBytes)
+           except:
+                print('i2c error')
         #Aim - 2 (fine tunes angle)
         if (state == 2):
+            
             #TODO tell arduino to stop searching
             #TODO send angle to arduino
-            sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1])
-            writeNumber(sendRads)
-            cont = readNumber()
-            while(cont != 1){
-            time.sleep(1)
-            recNum = readNumber()
-            cont = int.from_bytes(recNum, byteorder = 'big')
-            }
-            if (angle < 2 and angle > -2):
-                state = 3
-                    
+            sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1]]
+            print(desAngle)
+            try:
+                writeNumber(sendBytes)
+            except:
+                print('i2c error')
+            time.sleep(2)
+            #cont = readNumber()
+            #cont1 = cont[0]
+            #print(cont1)
+            #while(cont1 != 1):
+                #time.sleep(1)
+                #cont = readNumber()
+                #cont1 = cont[0]
+                #print(cont1)
+            state = 3
+            #if (angle < 2 and angle > -2):
+            #   state = 3
+                   
         #drive - 3(straight)
-        if (state == 3):
+        elif (state == 3):
             #TODO send arduino the distance
-            sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1])
+            sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1]]
+            try:
+                writeNumber(sendBytes)
+            except:
+                print('i2c error')
             #TODO tell arduino to stop aim and start drive
             break #leave infinite loop stop camera (i think this works)
                 
@@ -134,4 +163,4 @@ def main():
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
 
-
+main()
