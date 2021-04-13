@@ -90,6 +90,7 @@ def main():
             if ids is not None: #if marker detected
             
                print('IDs Detected: ', ids)
+               newPic = True
                pixHeight = abs(corners[0][0][0][1] - corners[0][0][3][1]) #height of marker in pixels
                distance = focalLen * markerHeight / pixHeight #distance calculation only accurate for size 700 markers
                print("Distance to Marker: ", distance)
@@ -114,12 +115,16 @@ def main():
         byteDistance = desDistance.to_bytes(2, byteorder = 'big')
         #print(absAngle)
         desAngle = int(absAngle-(angle*100))
+        isDesAngleNeg = 0
+        if(desAngle < 0):
+            desAngle = -1*desAngle
+            isDesAngleNeg = 1
         byteAngle = desAngle.to_bytes(2, byteorder = 'big')
        
         #Search - 1(rotates until it finds marker)
         if (state == 1):
             #TODO tell arduino to search
-           sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1]]
+           sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
            try:
                 writeNumber(sendBytes)
            except:
@@ -129,7 +134,7 @@ def main():
             
             #TODO tell arduino to stop searching
             #TODO send angle to arduino
-            sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1]]
+            sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
             print(desAngle)
             try:
                 writeNumber(sendBytes)
@@ -147,17 +152,19 @@ def main():
             state = 3
             #if (angle < 2 and angle > -2):
             #   state = 3
+            newPic = False
                    
         #drive - 3(straight)
         elif (state == 3):
-            #TODO send arduino the distance
-            sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1]]
-            try:
-                writeNumber(sendBytes)
-            except:
-                print('i2c error')
-            #TODO tell arduino to stop aim and start drive
-            break #leave infinite loop stop camera (i think this works)
+            if (newPic == True):
+                #TODO send arduino the distance
+                sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
+                try:
+                    writeNumber(sendBytes)
+                except:
+                    print('i2c error')
+                #TODO tell arduino to stop aim and start drive
+                break #leave infinite loop stop camera (i think this works)
                 
                
    except KeyboardInterrupt: #stop loop on Ctrl+C
