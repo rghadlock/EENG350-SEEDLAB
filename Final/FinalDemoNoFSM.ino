@@ -1,4 +1,4 @@
-/* Full_Control.ino
+/* FullDemoNoFSM.ino
  * 
  * Purpose : The files implements the full control system for the robot. Using serial communication,
  * various position, rotation, and speed functions can be called.
