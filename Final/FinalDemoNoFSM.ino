@@ -265,8 +265,7 @@ void loop() {
   // new function call system
   switch (state) {
     case 0:
-      if (abs(errorPos_rot) <= THRESH_ROT) done = 1;
-      if (abs(errorPos_dis) <= THRESH_DIS) done = 1;
+      if ((abs(errorPos_rot) <= THRESH_ROT) && (abs(errorPos_dis) <= THRESH_DIS)) done = 1;
       break;
     case 1:
       done = 0;
