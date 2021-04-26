@@ -13,21 +13,19 @@ import numpy as np
 import cv2.aruco as aruco
 from cv2 import aruco
 
-#set up lcd screen
-lcd_columns = 16
-lcd_rows = 2
+
 i2c=busio.I2C(board.SCL, board.SDA)
-lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns, lcd_rows)
-lcd.clear()
-lcd.color = [0,0,100]
+
 time.sleep(1)
 bus = smbus.SMBus(1)
 address = 4
-size = 3
+size = 4
+
 
 #writes I2C value
 def writeNumber(value):
     bus.write_i2c_block_data(address, 0, value)
+    #print("sending...")
     return -1
 
 #reads I2C value
@@ -48,6 +46,8 @@ def createMarkers(): #run this program then print the markers that are saved in 
    #the size of the marker must be 700 or the distance will not be accurate
 
 def main():
+   sendCount = 0
+   showPic = False
    state = 0 #state 0 is start
    camera = PiCamera()
    focalLen  = 1745.95 #pixels (calculated)
@@ -58,7 +58,7 @@ def main():
    camera.exposure_mode = 'sports'
    camera.awb_mode = 'auto'
    camera.iso = 800
-   camera.brightness = 100
+   camera.brightness = 85
    camera.contrast = 100
    camera.sharpness = 100
    camera.shutter_speed = 2000 #works best at 2000 i think
@@ -68,7 +68,7 @@ def main():
       while(1):
         with picamera.array.PiRGBArray(camera) as output:
             try:
-                if(state == 0 or state == 1 or state ==4):
+                if(state == 0 or state == 1 or state == 4 or state == 5):
                     readAbsAngleArd = readNumber()
                     absAngle = int.from_bytes(readAbsAngleArd, byteorder = 'big')
                     absAngle = absAngle >> 8
@@ -82,10 +82,11 @@ def main():
             aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250) #set aruco dictionary
             parameters = aruco.DetectorParameters_create() #create parameters for detector
             
-#            newSize = (960, 540)
-#            newImage = cv2.resize(grayImg, newSize)
-#            cv2.imshow('Image', newImage)
-#            cv2.waitKey(0)
+            if(showPic):
+                newSize = (960, 540)
+                newImage = cv2.resize(grayImg, newSize)
+                cv2.imshow('Image', newImage)
+                cv2.waitKey(0)
             
             #run detection on gray image
             corners, ids, rejectedIMGPoints = aruco.detectMarkers(grayImg, aruco_dict, parameters=parameters)
@@ -104,6 +105,7 @@ def main():
                print("Angle: ", angle)
                if (state == 0 or state ==1): #if start
                    state = 2 #skip to aim
+                   sendCount = 0
             else:
                #print("No")
                if (state == 0 ): #if start
@@ -122,29 +124,38 @@ def main():
             desAngle = -1*desAngle
             isDesAngleNeg = 1
       
-        byteAngle = desAngle.to_bytes(2, byteorder = 'big')
+        byteAngle = desAngle.to_bytes(3, byteorder = 'big')
        
         #Search - 1(rotates until it finds marker)
         if (state == 1):
             #TODO tell arduino to search
-           sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
-           try:
-                writeNumber(sendBytes)
-           except:
-                print('i2c error')
+           if(sendCount == 0):
+               sendCount = 1
+               sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+               print("send state 1")
+               try:
+                    writeNumber(sendBytes)
+                    time.sleep(1)
+                    writeNumber([0])
+               except:
+                    print('i2c error')
         #Aim - 2 (fine tunes angle)
         if (state == 2):
-            
+            if(sendCount == 0):
+                sendCount = 1
             #TODO tell arduino to stop searching
             #TODO send angle to arduino
-            sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
-            print(desAngle)
-            try:
-                writeNumber(sendBytes)
-            except:
-                print('i2c error')
+                sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+                print("Send state 2")
+                try:
+                    writeNumber(sendBytes)
+                    time.sleep(1)
+                    writeNumber([0])
+                except:
+                    print('i2c error')
             time.sleep(2.5)
             state = 3
+            sendCount = 0
             #if (angle < 2 and angle > -2):
             #   state = 3
             newPic = False
@@ -153,33 +164,77 @@ def main():
         elif (state == 3):
             if (newPic == True):
                 #TODO send arduino the distance
-                sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
-                newPic = False
-                try:
-                    writeNumber(sendBytes)
-                except:
-                    print('i2c error')
+                if(sendCount == 0):
+                    sendCount = 1
+                    sendBytes = [3, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+                    print("send state 3")
+                    newPic = False
+                    try:
+                        writeNumber(sendBytes)
+                        time.sleep(1)
+                        writeNumber([0])
+                    except:
+                        print('i2c error')
                 #TODO tell arduino to stop aim and start drive
-                time.sleep(8)
+                time.sleep(5.5)
                 cont = readNumber()
-                cont1 = cont[0]
+                cont1 = cont[3]
                 while(cont1 != 1):
                     time.sleep(5)
                     cont = readNumber()
-                    cont1 = cont[2]
-                print("state4")
+                    cont1 = cont[3]
                 state = 4;
+                sendCount = 0
                 newPic = False
-                    #leave infinite loop stop camera (i think this works)
-                
+                  
+             #90 degree turn   
         if(state == 4):
-            if (newPic == True):
-                print("inState4")
-                sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], isDesAngleNeg]
+            if(sendCount == 0):
+                sendCount = 1
+                sendBytes = [4, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+                print("send state 4")
                 try:
                     writeNumber(sendBytes)
+                    time.sleep(1)
+                    writeNumber([0])
                 except:
                     print('i2c error')
+            time.sleep(5)
+            cont = readNumber()
+            cont1 = cont[3]
+            while(cont1 != 1):
+                time.sleep(5)
+                cont = readNumber()
+                cont1 = cont[3]
+            state = 5
+            sendBytes = [5, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+            print("send state 5")
+            try:
+                    writeNumber(sendBytes)
+                    time.sleep(1)
+                    writeNumber([0])
+            except:
+                    print('i2c error')
+            sendCount = 0
+            #showPic = True
+            newPic = False
+
+    #circle
+        if(state == 5):
+            
+            if (newPic == True):
+                
+                sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+                
+                state = 3
+                print("back to aim")
+                try:
+                    writeNumber(sendBytes)
+                    time.sleep(1)
+                    writeNumber([0])
+                except:
+                    print('i2c error')
+                time.sleep(2.5)    
                     
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
