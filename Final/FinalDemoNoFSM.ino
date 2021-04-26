@@ -8,13 +8,14 @@
 // important parameters
 #define MAX_VOLTAGE       8.1       // maximum voltage of the input into the motor
 #define CIRCLE_RADIUS     0.4       // radius of circle robot will drive
-#define CIRCLE_TIME       3.0       // time for robot to drive circle       
+//#define CIRCLE_TIME       3.0       // time for robot to drive circle
+#define CIRCLE_TIME       6.0   
 #define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
 #define CIRCLE_THRESH_ROT 2.00      // threshhold to stop circle movement
 #define CIRCLE            2.5233    // circle circumfrence
 #define SLAVE_ADDRESS   0x04
-#define THRESH_ROT        1.5
-#define THRESH_DIS        0.01
+#define THRESH_ROT        2.0
+#define THRESH_DIS        0.02
 
 // libraries
 #include <Encoder.h>
@@ -94,8 +95,10 @@ double errorPosChange_rot = 0;
 int state = 0;
 int finState = 0;
 byte dataRec[10] = {0};
-byte outVal[3] = {0};
+byte outVal[4] = {0};
 int loopCount = 0;
+bool state4 = 0;
+static bool done = 1;
 
 // global variabls for system mode
 bool control[5] = {false, false, false, false, false}; // [distance, rotation, speed, angular speed, circle]
@@ -122,13 +125,14 @@ void search(long searchSpeed) {
 // input is in deg*100
 // Ex: input of 10 means 0.1 degrees
 void aim(long aimAng) {
-  //errorSpeedSum_dis = 0;
-  //errorSpeedSum_rot = 0;
+  errorSpeedSum_dis = 0;
+  errorSpeedSum_rot = 0;
   control[0] = true;
   control[1] = true;
   control[2] = true;
   control[3] = true;
   control[4] = false;
+  desPos_dis = actPos_dis;
   desPos_rot = (((double)aimAng) / 100);
 }
 
@@ -257,7 +261,7 @@ void loop() {
   static double difVoltage = 0;
   static double rightVoltage = 0;
   static double leftVoltage = 0;
-  static bool done = 1;
+
 
   // measures time for delay
   currentTime = millis();
@@ -270,26 +274,33 @@ void loop() {
     case 1:
       done = 0;
       search(2000);
+      //Serial.println(state);
       state = 0;
       break;
     case 2:
       done = 0;
       aim(angle + 600); // input is desired angle in degress*100
+      //Serial.println(state);
       state = 0;
       break;
     case 3:
       done = 0;
-      drive(distance - 280); //distance in mm
+      drive(distance - 350); //distance in mm
+      //Serial.println(state);
       state = 0;
       break;
     case 4:
       done = 0;
       rotate();
+     // Serial.println(state);
+      state4 = 1;
       state = 0;
       break;
     case 5:
       done = 0;
       circle();
+      state4 = 0;
+      //Serial.println(state);
       state = 0;
       break;
   }
@@ -344,19 +355,6 @@ void loop() {
       correct();
     }
   }
-
-  if (state == 1 && (actPos_rot >= 360)) {
-    rightEnc.write(0);
-    leftEnc.write(0);
-    newDeg_R = 0;
-    newDeg_L = 0;
-    oldDeg_R = 0;
-    oldDeg_L = 0;
-    angVel_R = 0;
-    angVel_L = 0;
-    sumVoltage = 0;
-    difVoltage = 0;
-  }
   
   // determines individual voltages
   rightVoltage = 0.5 * (sumVoltage + difVoltage);
@@ -375,18 +373,20 @@ void loop() {
   analogWrite(SPEED_L, abs(leftVoltage*255/ MAX_VOLTAGE));
 
   // displays samples for debugging purposes
-  Serial.print((double)currentTime / 1000); // sample time in seconds
-  Serial.print("\t");
-  Serial.print(actPos_dis, 4);
-  Serial.print("\t");
-  Serial.print(actPos_rot, 2);
-  Serial.print("\t\t");
-  Serial.print((double)distance/1000, 4);
-  Serial.print("\t");
-  Serial.print((double)angle/100, 2);
-  Serial.print("\t\t");
-  Serial.print(state);
-  Serial.print("\n\r");
+//  Serial.print((double)currentTime / 1000); // sample time in seconds
+//  Serial.print("\t");
+//  Serial.print(actPos_dis, 4);
+//  Serial.print("\t");
+//  Serial.print(actPos_rot, 2);
+//  Serial.print("\t\t");
+//  Serial.print((double)distance/1000, 4);
+//  Serial.print("\t");
+//  Serial.print((double)angle/100, 2);
+//  Serial.print("\t\t");
+//  Serial.print(state);
+//  Serial.print("\t\t");
+//  Serial.print(done);
+//  Serial.print("\n\r");
 
   // reassigns old degree variables
   oldDeg_R = newDeg_R;
@@ -411,9 +411,14 @@ void receiveData(int byteCount) {
     k++;
   }
   state = dataRec[1];
+  if(state == 4 && state4 ==1 ){
+    state = 5;
+  }
+  Serial.print("recieved: ");
+  Serial.println(state);
   distance = (dataRec[2] << 8 | dataRec[3]);
-  angle = (dataRec[4] << 8 | dataRec[5]);
-  if(dataRec[6] == 1){
+  angle = (dataRec[4] << 16 | ((dataRec[5] << 8) | dataRec[6] ));
+  if(dataRec[7] == 1){
     angle = -1* angle;
   }
   
@@ -422,10 +427,11 @@ void sendData(){
  //shift bits to get specific bytes from outPos
  
   int sendRot = int(actPos_rot *100);
-  outVal[0] = sendRot >>8;
-  outVal[1] = sendRot & 0x00FF;
-  outVal[2] = finState;
+  outVal[0] = sendRot >> 16;
+  outVal[1] = (sendRot & 0x00FF00) >> 8;
+  outVal[2] = (sendRot & 0x0000FF);
+  outVal[3] = done;
 
-  Wire.write(outVal,3);
+  Wire.write(outVal,4);
   
 }
