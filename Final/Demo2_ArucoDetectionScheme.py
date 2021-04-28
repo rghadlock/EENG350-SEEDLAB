@@ -35,23 +35,33 @@ def readNumber():
 
 def createMarkers(): #run this program then print the markers that are saved in this program's directory
    aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250) #set aruco dictionary
-   Mk1 = aruco.drawMarker(aruco_dict, 1, 700) #creat marker with ID1 size 700
-   Mk2 = aruco.drawMarker(aruco_dict, 2, 700) #creat marker with ID2 size 700
+   Mk1 = aruco.drawMarker(aruco_dict, 1, 300) #creat marker with ID1 size 300
+   Mk2 = aruco.drawMarker(aruco_dict, 2, 300) #creat marker with ID2 size 300
+   Mk3 = aruco.drawMarker(aruco_dict, 3, 300) #creat marker with ID3 size 300
+   Mk4 = aruco.drawMarker(aruco_dict, 4, 300) #creat marker with ID4 size 300
+   Mk5 = aruco.drawMarker(aruco_dict, 5, 300) #creat marker with ID5 size 300
+   Mk6 = aruco.drawMarker(aruco_dict, 6, 300) #creat marker with ID6 size 300
    cv2.imwrite('marker1.jpg', Mk1) #save markers
    cv2.imwrite('marker2.jpg', Mk2)
-   cv2.imshow('Marker 1', Mk1) #show markers
-   cv2.imshow('Marker 2', Mk2)
+   cv2.imwrite('marker3.jpg', Mk3)
+   cv2.imwrite('marker4.jpg', Mk4)
+   cv2.imwrite('marker5.jpg', Mk5) 
+   cv2.imwrite('marker6.jpg', Mk6)
+   cv2.imshow('Marker 1', Mk1) #show marker
    cv2.waitKey(0)
    cv2.destroyAllWindows()
-   #the size of the marker must be 700 or the distance will not be accurate
+   #the size of the marker must be 300 or the distance will not be accurate
 
 def main():
+   idCounter = 0
+   idChecker = 1
    sendCount = 0
+   finish = False
    showPic = False
    state = 0 #state 0 is start
    camera = PiCamera()
    focalLen  = 1745.95 #pixels (calculated)
-   markerHeight = 185 #mm (measured) marker size must be 700. use create marker function
+   markerHeight = 79 #mm (measured) marker size must be 300. use create marker function
    print("Calibrating Camera...")
    camera.resolution = (1920, 1088) #resolution of computer monitor
    time.sleep(2)
@@ -91,21 +101,37 @@ def main():
             #run detection on gray image
             corners, ids, rejectedIMGPoints = aruco.detectMarkers(grayImg, aruco_dict, parameters=parameters)
             if ids is not None: #if marker detected
-            
-               print('IDs Detected: ', ids)
-               newPic = True
-               pixHeight = abs(corners[0][0][0][1] - corners[0][0][3][1]) #height of marker in pixels
-               distance = focalLen * markerHeight / pixHeight #distance calculation only accurate for size 700 markers
-               print("Distance to Marker: ", distance)
-               dR = corners[0][0][0][0] - 960 #960 is half 1920 (midle of screen)
-               dL = corners[0][0][1][0] - 960
-               #print(dR, " ", dL)
-               dMid = (dL + dR) /2 #horizontal distance from center of screen to center of marker (x direction)
-               angle = dMid * 28/960
-               print("Angle: ", angle)
-               if (state == 0 or state ==1): #if start
-                   state = 2 #skip to aim
-                   sendCount = 0
+                if idChecker in ids: 
+                   print('IDs Detected: ', ids)
+                   newCounter = 0
+                   for x in ids:
+                       
+                       if x == idChecker:
+                           break
+                       else:
+                           newCounter = newCounter + 1
+                   newPic = True
+                   pixHeight = abs(corners[newCounter][0][0][1] - corners[newCounter][0][3][1]) #height of marker in pixels
+                   distance = focalLen * markerHeight / pixHeight #distance calculation only accurate for size 700 markers
+                   print("Distance to Marker: ", distance)
+                   dR = corners[newCounter][0][0][0] - 960 #960 is half 1920 (midle of screen)
+                   dL = corners[newCounter][0][1][0] - 960
+                   #print(dR, " ", dL)
+                   dMid = (dL + dR) /2 #horizontal distance from center of screen to center of marker (x direction)
+                   angle = dMid * 28/960
+                   print("Angle: ", angle)
+                   if (state == 0 or state ==1): #if start
+                       state = 2 #skip to aim
+                       sendCount = 0
+                   idCounter = idCounter + 1
+                   if idCounter == 2:
+                       idCounter = 0
+                       idChecker = idChecker + 1
+                       if idChecker == 7:
+                           idChecker = 1;
+                           finish = True
+                
+                    
             else:
                #print("No")
                if (state == 0 ): #if start
@@ -186,6 +212,7 @@ def main():
                 state = 4;
                 sendCount = 0
                 newPic = False
+                
                   
              #90 degree turn   
         if(state == 4):
@@ -199,7 +226,7 @@ def main():
                     writeNumber([0])
                 except:
                     print('i2c error')
-            time.sleep(5)
+            time.sleep(4)
             cont = readNumber()
             cont1 = cont[3]
             while(cont1 != 1):
@@ -209,6 +236,7 @@ def main():
             state = 5
             sendBytes = [5, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
             print("send state 5")
+            
             try:
                     writeNumber(sendBytes)
                     time.sleep(1)
@@ -216,6 +244,8 @@ def main():
             except:
                     print('i2c error')
             sendCount = 0
+            if finish == True:
+                state = 7
             #showPic = True
             newPic = False
 
@@ -234,8 +264,11 @@ def main():
                     writeNumber([0])
                 except:
                     print('i2c error')
-                time.sleep(2.5)    
-                    
+                time.sleep(2.5)
+        
+        if state == 7:
+            print("finish")
+            break
    except KeyboardInterrupt: #stop loop on Ctrl+C
       pass
 
