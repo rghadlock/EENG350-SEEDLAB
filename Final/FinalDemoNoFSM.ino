@@ -92,6 +92,7 @@ double errorPosOld_rot = 0;
 double errorPosChange_dis = 0;
 double errorPosChange_rot = 0;
 
+int tony = 0;
 int state = 0;
 int finState = 0;
 byte dataRec[10] = {0};
@@ -199,8 +200,8 @@ void correct() {
   control[2] = true;
   control[3] = true;
   control[4] = false;
-  desPos_dis += (CIRCLE - 0.05);
-  desPos_rot += 350;
+  desPos_dis += ((CIRCLE/4) - 0.05);
+  desPos_rot += 90;
 }
 
 // kill - stops robot from doing anything else
@@ -298,6 +299,7 @@ void loop() {
       break;
     case 5:
       done = 0;
+      tony += 1;
       circle();
       state4 = 0;
       //Serial.println(state);
@@ -350,8 +352,8 @@ void loop() {
   }
 
   // circle control
-  if (control[4]) {
-    if (abs(actPos_rot - (desPos_rot + 360.0)) <= CIRCLE_THRESH_ROT){
+  if (control[4] && (tony == 7)) {
+    if (abs(actPos_rot - (desPos_rot + 90.0)) <= CIRCLE_THRESH_ROT){
       correct();
     }
   }
