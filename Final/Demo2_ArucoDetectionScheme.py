@@ -56,7 +56,9 @@ def main():
    idCounter = 0
    idChecker = 1
    sendCount = 0
+   absAngle = 0
    finish = False
+   final = False
    showPic = False
    state = 0 #state 0 is start
    camera = PiCamera()
@@ -68,10 +70,10 @@ def main():
    camera.exposure_mode = 'sports'
    camera.awb_mode = 'auto'
    camera.iso = 800
-   camera.brightness = 85
+   camera.brightness = 80
    camera.contrast = 100
    camera.sharpness = 100
-   camera.shutter_speed = 2000 #works best at 2000 i think
+   camera.shutter_speed = 3000 #works best at 2000 i think
    time.sleep(2) 
    print("Searching for Marker. Press Ctrl+C to exit")
    try:
@@ -83,15 +85,15 @@ def main():
                     absAngle = int.from_bytes(readAbsAngleArd, byteorder = 'big')
                     absAngle = absAngle >> 8
                     
-                    
+                        
             except:
-                print('i2c error')
+                    print('i2c error')
             #time.sleep(0.1)
             camera.capture(output, 'rgb')
             grayImg = cv2.cvtColor(output.array, cv2.COLOR_BGR2GRAY) #get gray image
             aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250) #set aruco dictionary
             parameters = aruco.DetectorParameters_create() #create parameters for detector
-            
+            showPic = False
             if(showPic):
                 newSize = (960, 540)
                 newImage = cv2.resize(grayImg, newSize)
@@ -101,6 +103,7 @@ def main():
             #run detection on gray image
             corners, ids, rejectedIMGPoints = aruco.detectMarkers(grayImg, aruco_dict, parameters=parameters)
             if ids is not None: #if marker detected
+                
                 if idChecker in ids: 
                    print('IDs Detected: ', ids)
                    newCounter = 0
@@ -128,9 +131,19 @@ def main():
                        idCounter = 0
                        idChecker = idChecker + 1
                        if idChecker == 7:
-                           idChecker = 1;
-                           finish = True
-                
+                           idChecker = 1
+                           print("on marker 1 again")
+                           
+                desDistance = int(distance)
+                byteDistance = desDistance.to_bytes(2, byteorder = 'big')
+        #print(absAngle)
+                desAngle = int(absAngle-(angle*100))
+                isDesAngleNeg = 0
+                if(desAngle < 0):
+                    desAngle = -1*desAngle
+                    isDesAngleNeg = 1
+      
+                byteAngle = desAngle.to_bytes(3, byteorder = 'big')
                     
             else:
                #print("No")
@@ -141,23 +154,14 @@ def main():
             output.truncate(0) #clear image for new capture
             
         #Finite State Machine
-        desDistance = int(distance)
-        byteDistance = desDistance.to_bytes(2, byteorder = 'big')
-        #print(absAngle)
-        desAngle = int(absAngle-(angle*100))
-        isDesAngleNeg = 0
-        if(desAngle < 0):
-            desAngle = -1*desAngle
-            isDesAngleNeg = 1
-      
-        byteAngle = desAngle.to_bytes(3, byteorder = 'big')
+        
        
         #Search - 1(rotates until it finds marker)
         if (state == 1):
             #TODO tell arduino to search
            if(sendCount == 0):
                sendCount = 1
-               sendBytes = [1, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+               sendBytes = [1]
                print("send state 1")
                try:
                     writeNumber(sendBytes)
@@ -202,7 +206,7 @@ def main():
                     except:
                         print('i2c error')
                 #TODO tell arduino to stop aim and start drive
-                time.sleep(5.5)
+                time.sleep(5)
                 cont = readNumber()
                 cont1 = cont[3]
                 while(cont1 != 1):
@@ -210,6 +214,7 @@ def main():
                     cont = readNumber()
                     cont1 = cont[3]
                 state = 4;
+                
                 sendCount = 0
                 newPic = False
                 
@@ -226,7 +231,7 @@ def main():
                     writeNumber([0])
                 except:
                     print('i2c error')
-            time.sleep(4)
+            time.sleep(3)
             cont = readNumber()
             cont1 = cont[3]
             while(cont1 != 1):
@@ -244,8 +249,7 @@ def main():
             except:
                     print('i2c error')
             sendCount = 0
-            if finish == True:
-                state = 7
+            
             #showPic = True
             newPic = False
 
