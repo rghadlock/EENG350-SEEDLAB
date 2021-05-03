@@ -53,6 +53,7 @@ def createMarkers(): #run this program then print the markers that are saved in 
    #the size of the marker must be 300 or the distance will not be accurate
 
 def main():
+   finish2 = False
    idCounter = 0
    idChecker = 1
    sendCount = 0
@@ -73,7 +74,7 @@ def main():
    camera.brightness = 80
    camera.contrast = 100
    camera.sharpness = 100
-   camera.shutter_speed = 3000 #works best at 2000 i think
+   camera.shutter_speed = 3000 
    time.sleep(2) 
    print("Searching for Marker. Press Ctrl+C to exit")
    try:
@@ -130,19 +131,22 @@ def main():
                    if idCounter == 2:
                        idCounter = 0
                        idChecker = idChecker + 1
-                       if idChecker == 7:
-                           idChecker = 1
-                           print("on marker 1 again")
+                   
+                   if idChecker == 7:
+                       idChecker = 1
+                       finish = True
+                       print("on marker 1 again")
                            
                 desDistance = int(distance)
                 byteDistance = desDistance.to_bytes(2, byteorder = 'big')
         #print(absAngle)
                 desAngle = int(absAngle-(angle*100))
                 isDesAngleNeg = 0
+                
                 if(desAngle < 0):
                     desAngle = -1*desAngle
                     isDesAngleNeg = 1
-      
+                
                 byteAngle = desAngle.to_bytes(3, byteorder = 'big')
                     
             else:
@@ -171,24 +175,25 @@ def main():
                     print('i2c error')
         #Aim - 2 (fine tunes angle)
         if (state == 2):
-            if(sendCount == 0):
-                sendCount = 1
-            #TODO tell arduino to stop searching
-            #TODO send angle to arduino
-                sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
-                print("Send state 2")
-                try:
-                    writeNumber(sendBytes)
-                    time.sleep(1)
-                    writeNumber([0])
-                except:
-                    print('i2c error')
-            time.sleep(2.5)
-            state = 3
-            sendCount = 0
-            #if (angle < 2 and angle > -2):
-            #   state = 3
-            newPic = False
+            if newPic == True:
+                if(sendCount == 0):
+                    sendCount = 1
+                #TODO tell arduino to stop searching
+                #TODO send angle to arduino
+                    sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
+                    print("Send state 2")
+                    try:
+                        writeNumber(sendBytes)
+                        time.sleep(1)
+                        writeNumber([0])
+                    except:
+                        print('i2c error')
+                time.sleep(2.5)
+                state = 3
+                sendCount = 0
+                #if (angle < 2 and angle > -2):
+                #   state = 3
+                newPic = False
                    
         #drive - 3(straight)
         elif (state == 3):
@@ -214,6 +219,11 @@ def main():
                     cont = readNumber()
                     cont1 = cont[3]
                 state = 4;
+                if finish2 == True:
+                    state = 7
+                if finish == True:
+                    finish2 = True
+                
                 
                 sendCount = 0
                 newPic = False
@@ -260,14 +270,16 @@ def main():
                 
                 sendBytes = [2, byteDistance[0], byteDistance[1], byteAngle[0], byteAngle[1], byteAngle[2], isDesAngleNeg]
                 
-                state = 3
+                
                 print("back to aim")
+                newPic = False
                 try:
                     writeNumber(sendBytes)
                     time.sleep(1)
                     writeNumber([0])
                 except:
                     print('i2c error')
+                state = 3
                 time.sleep(2.5)
         
         if state == 7:
