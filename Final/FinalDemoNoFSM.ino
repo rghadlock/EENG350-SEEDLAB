@@ -12,7 +12,7 @@
 #define CIRCLE_TIME       8.5   
 #define CIRCLE_THRESH_DIS 0.05      // threshhold to stop circle movement
 #define CIRCLE_THRESH_ROT 2.00      // threshhold to stop circle movement
-#define CIRCLE            2.5233    // circle circumfrence
+#define CIRCLE            2.0//2.5233    // circle circumfrence
 #define SLAVE_ADDRESS   0x04
 #define THRESH_ROT        2.0
 #define THRESH_DIS        0.02
@@ -200,7 +200,7 @@ void correct() {
   control[2] = true;
   control[3] = true;
   control[4] = false;
-  desPos_dis += ((CIRCLE/4) - 0.05);
+  desPos_dis += (CIRCLE/4);
   desPos_rot += 90;
 }
 
@@ -280,7 +280,8 @@ void loop() {
       break;
     case 2:
       done = 0;
-      aim(angle + 600); // input is desired angle in degress*100
+      aim(angle + 600);
+      //aim(angle + 600); // input is desired angle in degress*100
       //Serial.println(state);
       state = 0;
       break;
@@ -292,6 +293,18 @@ void loop() {
       break;
     case 4:
       done = 0;
+      if (tony == 3) {
+        actPos_dis = 0;
+        actPos_rot = 0;
+        desPos_dis = 0;
+        actPos_dis = 0;
+        rightEnc.write(0);
+        leftEnc.write(0);
+        oldDeg_R = 0;
+        oldDeg_L = 0;
+        newDeg_R = 0;
+        newDeg_L = 0;
+      }
       rotate();
      // Serial.println(state);
       state4 = 1;
@@ -353,7 +366,7 @@ void loop() {
 
   // circle control
   if (control[4] && (tony == 7)) {
-    if (abs(actPos_rot - (desPos_rot + 90.0)) <= CIRCLE_THRESH_ROT){
+    if (abs(actPos_rot - (desPos_rot + 80.0)) <= CIRCLE_THRESH_ROT){
       correct();
     }
   }
